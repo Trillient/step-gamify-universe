@@ -10,6 +10,7 @@ interface StepData {
   userName: string;
   steps: number;
   week: number;
+  year: number;
   timestamp: number;
 }
 
@@ -24,7 +25,8 @@ const WeeklyChart = () => {
       try {
         const q = query(
           collection(db, "steps"),
-          where("userId", "==", user.uid)
+          where("userId", "==", user.uid),
+          where("year", "==", 2025)
         );
         const querySnapshot = await getDocs(q);
         
@@ -42,6 +44,8 @@ const WeeklyChart = () => {
     fetchData();
   }, [user]);
 
+  const formatXAxis = (week: number) => `Week ${week}`;
+
   return (
     <div className="w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -57,7 +61,8 @@ const WeeklyChart = () => {
           <CartesianGrid strokeDasharray="3 3" className="opacity-50" />
           <XAxis
             dataKey="week"
-            label={{ value: "Week", position: "insideBottom", offset: -5 }}
+            tickFormatter={formatXAxis}
+            label={{ value: "Week of 2025", position: "insideBottom", offset: -5 }}
           />
           <YAxis label={{ value: "Steps", angle: -90, position: "insideLeft" }} />
           <Tooltip
@@ -67,6 +72,8 @@ const WeeklyChart = () => {
               border: "none",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
             }}
+            formatter={(value: number) => [`${value.toLocaleString()} steps`]}
+            labelFormatter={(week) => `Week ${week} of 2025`}
           />
           <Line
             type="monotone"
