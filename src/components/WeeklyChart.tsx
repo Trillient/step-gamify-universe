@@ -4,7 +4,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 interface StepData {
   userId: string;
@@ -46,6 +46,19 @@ const WeeklyChart = () => {
 
   const formatXAxis = (weekNum: number) => `Week ${weekNum}`;
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (!isValid(date)) {
+        return "";
+      }
+      return format(date, 'MMM d');
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "";
+    }
+  };
+
   return (
     <div className="w-full h-[300px] bg-white/30 backdrop-blur-sm rounded-lg p-4">
       <ResponsiveContainer width="100%" height="100%">
@@ -75,10 +88,16 @@ const WeeklyChart = () => {
             formatter={(value: number) => [`${value.toLocaleString()} steps`]}
             labelFormatter={(week) => {
               const weekData = data.find(d => d.week === week);
-              if (weekData) {
-                return `Week ${week}\n${format(new Date(weekData.startDate), 'MMM d')} - ${format(new Date(weekData.endDate), 'MMM d')}`;
+              if (!weekData) return `Week ${week}`;
+              
+              const startDateStr = formatDate(weekData.startDate);
+              const endDateStr = formatDate(weekData.endDate);
+              
+              if (!startDateStr || !endDateStr) {
+                return `Week ${week}`;
               }
-              return `Week ${week}`;
+              
+              return `Week ${week}\n${startDateStr} - ${endDateStr}`;
             }}
           />
           <Line
