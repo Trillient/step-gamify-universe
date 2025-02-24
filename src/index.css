@@ -73,17 +73,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 }
 
 .dot-pattern {
+  @apply dark:opacity-10;
   background-image: radial-gradient(circle at 1px 1px, rgb(229 231 235) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
 .glass-card {
-  @apply bg-white/80 backdrop-blur-lg border border-white/20 shadow-xl;
+  @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl;
 }
 
 @keyframes float {

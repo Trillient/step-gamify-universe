@@ -14,3 +14,8 @@ export interface UserTotalSteps {
   userName: string;
   totalSteps: number;
 }
+
+export interface ChartDataPoint {
+  week: string;
+  [key: string]: string | number; // For dynamic user data
+}

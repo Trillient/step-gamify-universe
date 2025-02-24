@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -123,7 +122,10 @@ const Leaderboard = () => {
       />
       <WeeklyRanking leaderboard={leaderboard} />
       <AllTimeRanking allTimeLeaderboard={allTimeLeaderboard} />
-      <ProgressChart chartData={chartData} uniqueUsers={uniqueUsers} />
+      <ProgressChart 
+        weeklyData={weeklyData}
+        weekRanges={weekRanges}
+      />
     </div>
   );
 };
