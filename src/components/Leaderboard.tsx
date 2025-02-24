@@ -107,11 +107,17 @@ const Leaderboard = () => {
     };
   }, [currentWeek]);
 
-  // Prepare data for combined chart
+  // Prepare data for combined chart - Fixed data formatting
   const chartData = weekRanges.map(week => {
-    const weekData: any = { week: `Week ${week}` };
+    const weekData: { [key: string]: any } = { week: `Week ${week}` };
     const usersInWeek = weeklyData.filter(d => d.week === week);
     
+    // Initialize all users with 0 steps
+    [...new Set(weeklyData.map(d => d.userName))].forEach(userName => {
+      weekData[userName] = 0;
+    });
+    
+    // Update steps for users who have data
     usersInWeek.forEach(userData => {
       weekData[userData.userName] = userData.steps;
     });
