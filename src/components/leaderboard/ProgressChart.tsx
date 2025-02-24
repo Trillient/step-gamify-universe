@@ -36,7 +36,7 @@ const ProgressChart = ({ weeklyData, weekRanges }: ProgressChartProps) => {
     return weekData;
   });
 
-  if (chartData.length === 0) {
+  if (!weeklyData.length || !weekRanges.length) {
     return (
       <div className="mt-8">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">

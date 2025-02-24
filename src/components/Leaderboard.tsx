@@ -5,7 +5,7 @@ import WeekSelector from "./leaderboard/WeekSelector";
 import WeeklyRanking from "./leaderboard/WeeklyRanking";
 import AllTimeRanking from "./leaderboard/AllTimeRanking";
 import ProgressChart from "./leaderboard/ProgressChart";
-import { StepData, UserTotalSteps } from "./leaderboard/types";
+import type { StepData, UserTotalSteps } from "./leaderboard/types";
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<StepData[]>([]);
@@ -84,31 +84,11 @@ const Leaderboard = () => {
     };
   }, [currentWeek]);
 
-  // Prepare data for combined chart
-  const chartData = weekRanges.map(week => {
-    const weekData: { [key: string]: any } = { week: `Week ${week}` };
-    const usersInWeek = weeklyData.filter(d => d.week === week);
-    
-    // Initialize all users with 0 steps
-    [...new Set(weeklyData.map(d => d.userName))].forEach(userName => {
-      weekData[userName] = 0;
-    });
-    
-    // Update steps for users who have data
-    usersInWeek.forEach(userData => {
-      weekData[userData.userName] = userData.steps;
-    });
-    
-    return weekData;
-  });
-
-  const uniqueUsers = [...new Set(weeklyData.map(d => d.userName))];
-
   if (loading) {
     return (
       <div className="text-center py-8">
         <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading leaderboard...</p>
+        <p className="text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
       </div>
     );
   }
