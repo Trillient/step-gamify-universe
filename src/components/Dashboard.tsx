@@ -6,50 +6,66 @@ import { LogOut, Trophy, TrendingUp, Users } from "lucide-react";
 import StepInput from "./StepInput";
 import Leaderboard from "./Leaderboard";
 import WeeklyChart from "./WeeklyChart";
+import Settings from "./Settings";
+import { useState } from "react";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <div className="min-h-screen w-full dot-pattern">
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 opacity-90" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 opacity-90 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
       
       <div className="relative container mx-auto p-4 space-y-6 pt-8">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.displayName}!</h1>
-          <Button variant="ghost" onClick={logout} className="gap-2">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSettings(!showSettings)}
+              className="gap-2"
+            >
+              {showSettings ? "Dashboard" : "Settings"}
+            </Button>
+            <Button variant="ghost" onClick={logout} className="gap-2">
+              <LogOut className="w-4 h-4" /> Sign Out
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="glass-card p-6 col-span-full md:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" /> Your Progress
-              </h2>
-            </div>
-            <WeeklyChart />
-          </Card>
+        {showSettings ? (
+          <Settings />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="glass-card p-6 col-span-full md:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" /> Your Progress
+                </h2>
+              </div>
+              <WeeklyChart />
+            </Card>
 
-          <Card className="glass-card p-6 col-span-full md:col-span-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Trophy className="w-5 h-5" /> Weekly Steps
-              </h2>
-            </div>
-            <StepInput />
-          </Card>
+            <Card className="glass-card p-6 col-span-full md:col-span-1">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Trophy className="w-5 h-5" /> Weekly Steps
+                </h2>
+              </div>
+              <StepInput />
+            </Card>
 
-          <Card className="glass-card p-6 col-span-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Users className="w-5 h-5" /> Family Leaderboard
-              </h2>
-            </div>
-            <Leaderboard />
-          </Card>
-        </div>
+            <Card className="glass-card p-6 col-span-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5" /> Family Leaderboard
+                </h2>
+              </div>
+              <Leaderboard />
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
