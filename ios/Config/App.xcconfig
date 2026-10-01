@@ -1,0 +1,7 @@
+// Shared build settings. Signing is not committed: put your team in
+// Signing.local.xcconfig (gitignored), e.g. `DEVELOPMENT_TEAM = ABCDE12345`.
+PRODUCT_BUNDLE_IDENTIFIER = dev.woolston.steps
+MARKETING_VERSION = 1.0
+CURRENT_PROJECT_VERSION = 1
+CODE_SIGN_STYLE = Automatic
+#include? "Signing.local.xcconfig"
