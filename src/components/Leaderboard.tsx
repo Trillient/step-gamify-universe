@@ -3,7 +3,8 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { EyeOff, Users } from "lucide-react";
 import type { ChallengeInfo, Leaderboard as LeaderboardData } from "@/lib/api";
 import { fmtDay, fmtSteps } from "@/lib/format";
-import { rankRows, startedPeriods } from "@/lib/steps";
+import { chaseCue, rankCue } from "@/lib/progress";
+import { ordinal, plural, rankRows, startedPeriods } from "@/lib/steps";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import ErrorNote from "./ErrorNote";
@@ -24,6 +25,8 @@ const Leaderboard = ({ challenge: c, board }: Props) => {
   const ranked = data ? rankRows(data.rows, (r) => (view === "total" ? r.total : r.weeks[String(view)])) : [];
   const top = ranked[0]?.value ?? 0;
   const othersShown = ranked.some((r) => !r.isMe);
+  const chase = othersShown ? chaseCue(ranked) : null;
+  const scope = view === "total" ? "overall" : `in week ${view}`;
   const min = fmtSteps(c.publicMinSteps);
 
   return (
@@ -75,43 +78,68 @@ const Leaderboard = ({ challenge: c, board }: Props) => {
 
         {data && ranked.length > 0 && (
           <ol className="space-y-1.5">
-            {ranked.map((r) => (
-              <li
-                key={r.id}
-                className={cn("rounded-lg px-3 py-2.5", r.isMe ? "bg-brand-soft" : "bg-muted/50")}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
-                      r.rank === 1 && othersShown ? "bg-highlight-foreground text-highlight" : "bg-card text-muted-foreground",
+            {ranked.map((r) => {
+              const cue = rankCue(r, ranked, ordinal);
+              const podium = othersShown && r.rank <= 3;
+              return (
+                <li
+                  key={r.id}
+                  aria-current={r.isMe ? "true" : undefined}
+                  className={cn(
+                    "rounded-lg px-3 py-2.5",
+                    r.isMe ? "bg-brand-soft ring-1 ring-inset ring-primary/25" : "bg-muted/50",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums",
+                        !podium && "bg-card text-muted-foreground",
+                        podium && r.rank === 1 && "bg-highlight-foreground text-highlight",
+                        podium && r.rank > 1 && "bg-card text-foreground ring-1 ring-inset ring-border",
+                      )}
+                    >
+                      {othersShown ? (
+                        <>
+                          <span className="sr-only">{cue.spoken}</span>
+                          <span aria-hidden>{cue.label}</span>
+                        </>
+                      ) : (
+                        // alone on the board: a rank of 1 would mislead
+                        <span aria-hidden>{r.name.charAt(0).toUpperCase()}</span>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-medium">{r.name}</span>
+                    {r.isMe && (
+                      <span className="shrink-0 rounded-full bg-card px-2 py-0.5 text-xs font-medium text-brand-soft-foreground">
+                        You
+                      </span>
                     )}
-                  >
-                    {othersShown ? (
-                      <>
-                        <span className="sr-only">Rank </span>
-                        {r.rank}
-                      </>
-                    ) : (
-                      // alone on the board: a rank of 1 would mislead
-                      <span aria-hidden>{r.name.charAt(0).toUpperCase()}</span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate font-medium">
-                    {r.name}
-                    {r.isMe && <span className="ml-1.5 text-xs font-normal text-brand-soft-foreground">(you)</span>}
-                  </span>
-                  <span className="shrink-0 font-semibold tabular-nums">{fmtSteps(r.value)}</span>
-                </div>
-                <div className="ml-10 mt-1.5 h-1 overflow-hidden rounded-full bg-card" aria-hidden>
-                  <div
-                    className={cn("h-full rounded-full", r.isMe ? "bg-primary" : "bg-primary/45")}
-                    style={{ width: `${top > 0 ? Math.max((r.value / top) * 100, r.value > 0 ? 2 : 0) : 0}%` }}
-                  />
-                </div>
-              </li>
-            ))}
+                    <span className="shrink-0 font-semibold tabular-nums">{fmtSteps(r.value)}</span>
+                  </div>
+                  <div className="ml-10 mt-1.5 h-1 overflow-hidden rounded-full bg-card" aria-hidden>
+                    <div
+                      className={cn("h-full rounded-full", r.isMe ? "bg-primary" : "bg-primary/45")}
+                      style={{ width: `${top > 0 ? Math.max((r.value / top) * 100, r.value > 0 ? 2 : 0) : 0}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ol>
+        )}
+
+        {chase && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {chase.kind === "leading" && <>You're leading {scope} by {fmtSteps(chase.by)} steps.</>}
+            {chase.kind === "tied-first" && <>You're sharing first place {scope}.</>}
+            {chase.kind === "tied" && <>You're level with {plural(chase.with, "other walker")} {scope}.</>}
+            {chase.kind === "behind" && (
+              <>
+                {fmtSteps(chase.by)} steps behind {chase.name} {scope}.
+              </>
+            )}
+          </p>
         )}
 
         {data && ranked.length === 0 && c.phase !== "upcoming" && (
