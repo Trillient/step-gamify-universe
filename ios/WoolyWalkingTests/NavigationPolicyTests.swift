@@ -61,11 +61,24 @@ final class NavigationPolicyTests: XCTestCase {
         XCTAssertEqual(target("javascript:void(0)"), .ignore)
     }
 
-    func testUserAgentLooksLikeSafariNotBareWebKit() {
+    func testIPhoneUserAgentIsMobileSafari() {
+        let ua = SiteConfig.userAgent(isPad: false, osMajor: 18, osMinor: 2)
+        XCTAssertEqual(ua, "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1")
+        XCTAssertEqual(ua.components(separatedBy: "Mobile/").count, 2, "Mobile token must appear once")
+    }
+
+    func testIPadUserAgentIsDesktopSafariWithoutMobileToken() {
+        let ua = SiteConfig.userAgent(isPad: true, osMajor: 18, osMinor: 2)
+        XCTAssertEqual(ua, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15")
+        XCTAssertFalse(ua.contains("Mobile"))
+        XCTAssertFalse(ua.contains("iPhone"))
+        XCTAssertFalse(ua.contains("15E148"))
+    }
+
+    func testCurrentDeviceUserAgentLooksLikeSafari() {
         let ua = SiteConfig.userAgent
         XCTAssertTrue(ua.hasPrefix("Mozilla/5.0 ("))
         XCTAssertTrue(ua.contains("Version/"))
-        XCTAssertTrue(ua.hasSuffix("Mobile/15E148 Safari/604.1"))
-        XCTAssertEqual(ua.components(separatedBy: "Mobile/").count, 2, "Mobile token must appear once")
+        XCTAssertTrue(ua.contains("Safari/"))
     }
 }

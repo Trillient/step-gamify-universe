@@ -11,18 +11,22 @@ enum SiteConfig {
     /// Google rejects OAuth in webviews it can identify ("disallowed_useragent").
     /// `applicationNameForUserAgent` only appends to the WebKit UA, so the full
     /// string is set through `customUserAgent` instead, shaped like Safari's.
-    /// This is a best effort, not a guarantee Google accepts the shell.
+    /// iPadOS Safari presents the desktop (Macintosh) UA, so the iPad branch
+    /// matches desktop Safari with no Mobile token. This is a best effort, not
+    /// a guarantee Google accepts the shell.
     static var userAgent: String {
         let os = ProcessInfo.processInfo.operatingSystemVersion
-        let version = "\(os.majorVersion).\(os.minorVersion)"
-        let platform: String
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            // iPadOS Safari presents the desktop (Macintosh) UA.
-            platform = "Macintosh; Intel Mac OS X 10_15_7"
-        } else {
-            platform = "iPhone; CPU iPhone OS \(os.majorVersion)_\(os.minorVersion) like Mac OS X"
+        return userAgent(isPad: UIDevice.current.userInterfaceIdiom == .pad,
+                         osMajor: os.majorVersion, osMinor: os.minorVersion)
+    }
+
+    static func userAgent(isPad: Bool, osMajor: Int, osMinor: Int) -> String {
+        let version = "\(osMajor).\(osMinor)"
+        let webKit = "AppleWebKit/605.1.15 (KHTML, like Gecko)"
+        if isPad {
+            return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \(webKit) Version/\(version) Safari/605.1.15"
         }
-        return "Mozilla/5.0 (\(platform)) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/\(version) Mobile/15E148 Safari/604.1"
+        return "Mozilla/5.0 (iPhone; CPU iPhone OS \(osMajor)_\(osMinor) like Mac OS X) \(webKit) Version/\(version) Mobile/15E148 Safari/604.1"
     }
 }
 
