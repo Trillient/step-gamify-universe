@@ -1,72 +1,51 @@
-
+import { useQuery } from "@tanstack/react-query";
+import { Footprints, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { LogOut, Trophy, TrendingUp, Users } from "lucide-react";
-import StepInput from "./StepInput";
+import StatusBanner from "./StatusBanner";
+import StepEntry from "./StepEntry";
+import MyProgress from "./MyProgress";
 import Leaderboard from "./Leaderboard";
-import WeeklyChart from "./WeeklyChart";
-import Settings from "./Settings";
-import { useState } from "react";
+import DisplayName from "./DisplayName";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
-  const [showSettings, setShowSettings] = useState(false);
+  const challenge = useQuery({ queryKey: ["challenge"], queryFn: api.challenge, refetchInterval: 5 * 60_000 });
 
   return (
-    <div className="min-h-screen w-full dot-pattern">
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 opacity-90 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
-      
-      <div className="relative container mx-auto p-4 space-y-6 pt-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.displayName}!</h1>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowSettings(!showSettings)}
-              className="gap-2"
-            >
-              {showSettings ? "Dashboard" : "Settings"}
-            </Button>
-            <Button variant="ghost" onClick={logout} className="gap-2">
-              <LogOut className="w-4 h-4" /> Sign Out
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <header className="border-b bg-white/70 dark:bg-gray-900/70 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
+          <div className="flex items-center gap-2 font-semibold">
+            <Footprints className="h-5 w-5 text-emerald-600" aria-hidden />
+            <span>Wooly Walking 2026</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-sm text-muted-foreground sm:inline">{user?.displayName}</span>
+            <Button variant="ghost" size="sm" onClick={logout} className="gap-1">
+              <LogOut className="h-4 w-4" /> Sign out
             </Button>
           </div>
         </div>
+      </header>
 
-        {showSettings ? (
-          <Settings />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="glass-card p-6 col-span-full md:col-span-2">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" /> Your Progress
-                </h2>
-              </div>
-              <WeeklyChart />
-            </Card>
-
-            <Card className="glass-card p-6 col-span-full md:col-span-1">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Trophy className="w-5 h-5" /> Weekly Steps
-                </h2>
-              </div>
-              <StepInput />
-            </Card>
-
-            <Card className="glass-card p-6 col-span-full">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Users className="w-5 h-5" /> Family Leaderboard
-                </h2>
-              </div>
-              <Leaderboard />
-            </Card>
-          </div>
+      <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+        {challenge.isError && (
+          <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            Could not load the challenge details. Please refresh.
+          </p>
         )}
-      </div>
+        {challenge.data && (
+          <>
+            <StatusBanner challenge={challenge.data} />
+            <StepEntry challenge={challenge.data} />
+            <MyProgress challenge={challenge.data} />
+            <Leaderboard challenge={challenge.data} />
+          </>
+        )}
+        {challenge.isLoading && <p className="text-center text-sm text-muted-foreground">Loading…</p>}
+      </main>
     </div>
   );
 };

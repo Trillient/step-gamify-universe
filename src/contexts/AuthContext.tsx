@@ -1,14 +1,15 @@
-
-import { createContext, useContext, useEffect, useState } from "react";
-import { auth, googleProvider } from "@/lib/firebase";
-import { signInWithPopup, signOut, User } from "firebase/auth";
-import { useToast } from "@/components/ui/use-toast";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
+import { toast } from "sonner";
+import { auth, firebaseConfigured, googleProvider } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  configured: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  getToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -17,55 +18,38 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(Boolean(auth));
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+    if (!auth) return;
+    return onAuthStateChanged(auth, (u) => {
+      setUser(u);
       setLoading(false);
     });
-
-    return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
+    if (!auth) return;
     try {
       await signInWithPopup(auth, googleProvider);
-      toast({
-        title: "Welcome!",
-        description: "Successfully signed in.",
-      });
     } catch (error) {
-      console.error("Error signing in with Google:", error);
-      toast({
-        title: "Error",
-        description: "Failed to sign in with Google.",
-        variant: "destructive",
-      });
+      const code = (error as { code?: string }).code;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      console.error("Google sign-in failed", error);
+      toast.error("Could not sign in with Google. Please try again.");
     }
-  };
+  }, []);
 
-  const logout = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: "Goodbye!",
-        description: "Successfully signed out.",
-      });
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error",
-        description: "Failed to sign out.",
-        variant: "destructive",
-      });
-    }
-  };
+  const logout = useCallback(async () => {
+    if (auth) await signOut(auth);
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
-      {!loading && children}
-    </AuthContext.Provider>
+  const getToken = useCallback(async () => (auth?.currentUser ? auth.currentUser.getIdToken() : null), []);
+
+  const value = useMemo(
+    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, logout, getToken }),
+    [user, loading, signInWithGoogle, logout, getToken],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

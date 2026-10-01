@@ -25,5 +25,13 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unused-vars": "off",
     },
+  },
+  {
+    files: ["server/**/*.ts", "shared/**/*.ts", "tests/**/*.ts"],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ["tests/**/*.ts"],
+    rules: { "@typescript-eslint/no-explicit-any": "off" },
   }
 );

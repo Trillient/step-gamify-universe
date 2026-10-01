@@ -1,112 +1,76 @@
-import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import WeekSelector from "./leaderboard/WeekSelector";
-import WeeklyRanking from "./leaderboard/WeeklyRanking";
-import AllTimeRanking from "./leaderboard/AllTimeRanking";
-import ProgressChart from "./leaderboard/ProgressChart";
-import type { StepData, UserTotalSteps } from "./leaderboard/types";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { api, type ChallengeInfo } from "@/lib/api";
+import { fmtSteps } from "@/lib/format";
 
-const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<StepData[]>([]);
-  const [allTimeLeaderboard, setAllTimeLeaderboard] = useState<UserTotalSteps[]>([]);
-  const [weeklyData, setWeeklyData] = useState<StepData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentWeek, setCurrentWeek] = useState<number>(1);
-  const [weekRanges, setWeekRanges] = useState<number[]>([]);
+const Leaderboard = ({ challenge }: { challenge: ChallengeInfo }) => {
+  const { getToken } = useAuth();
+  const [view, setView] = useState<"total" | number>("total");
+  const board = useQuery({ queryKey: ["leaderboard"], queryFn: () => api.leaderboard(getToken) });
 
-  useEffect(() => {
-    const currentYear = new Date().getFullYear();
-    const startDate = new Date(currentYear, 9, 1); // October 1st
-    const now = Date.now();
-    const weekNumber = Math.ceil((now - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    setCurrentWeek(Math.max(1, weekNumber));
+  const weeks = challenge.periods.filter((p) => p.start <= challenge.today);
 
-    // Calculate available weeks
-    const weeks: number[] = [];
-    for (let i = 1; i <= weekNumber; i++) {
-      weeks.push(i);
-    }
-    setWeekRanges(weeks);
-  }, []);
-
-  useEffect(() => {
-    const currentYear = new Date().getFullYear();
-    
-    // Query for selected week
-    const weekQuery = query(
-      collection(db, "steps"),
-      where("year", "==", currentYear),
-      where("week", "==", currentWeek)
-    );
-
-    // Query for all weeks to calculate totals and chart data
-    const allWeeksQuery = query(
-      collection(db, "steps"),
-      where("year", "==", currentYear)
-    );
-
-    const weekUnsubscribe = onSnapshot(weekQuery, (snapshot) => {
-      const data: StepData[] = [];
-      snapshot.forEach((doc) => {
-        data.push(doc.data() as StepData);
-      });
-      setLeaderboard(data.sort((a, b) => b.steps - a.steps));
-      setLoading(false);
-    });
-
-    const allWeeksUnsubscribe = onSnapshot(allWeeksQuery, (snapshot) => {
-      const data: StepData[] = [];
-      snapshot.forEach((doc) => {
-        data.push(doc.data() as StepData);
-      });
-      setWeeklyData(data);
-
-      // Calculate all-time leaderboard
-      const totals = data.reduce((acc: { [key: string]: UserTotalSteps }, curr) => {
-        if (!acc[curr.userId]) {
-          acc[curr.userId] = {
-            userId: curr.userId,
-            userName: curr.userName,
-            totalSteps: 0
-          };
-        }
-        acc[curr.userId].totalSteps += curr.steps;
-        return acc;
-      }, {});
-
-      setAllTimeLeaderboard(Object.values(totals).sort((a, b) => b.totalSteps - a.totalSteps));
-    });
-
-    return () => {
-      weekUnsubscribe();
-      allWeeksUnsubscribe();
-    };
-  }, [currentWeek]);
-
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
-      </div>
-    );
-  }
+  const ranked = (board.data?.rows ?? [])
+    .map((r) => ({ ...r, value: view === "total" ? r.total : r.weeks[String(view)] }))
+    .filter((r) => r.value !== undefined)
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
 
   return (
-    <div className="space-y-8">
-      <WeekSelector 
-        currentWeek={currentWeek}
-        weekRanges={weekRanges}
-        onWeekChange={setCurrentWeek}
-      />
-      <WeeklyRanking leaderboard={leaderboard} />
-      <AllTimeRanking allTimeLeaderboard={allTimeLeaderboard} />
-      <ProgressChart 
-        weeklyData={weeklyData}
-        weekRanges={weekRanges}
-      />
-    </div>
+    <section className="rounded-xl border bg-white/80 dark:bg-gray-900/80 p-4 space-y-3">
+      <h2 className="text-lg font-semibold">Leaderboard</h2>
+
+      <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label="Leaderboard view">
+        {(["total", ...weeks.map((p) => p.week)] as const).map((v) => (
+          <button
+            key={v}
+            role="tab"
+            aria-selected={view === v}
+            onClick={() => setView(v)}
+            className={`shrink-0 rounded-full border px-3 py-1 text-sm ${
+              view === v ? "bg-emerald-600 text-white border-emerald-600" : "bg-background"
+            }`}
+          >
+            {v === "total" ? "Total" : `W${v}`}
+          </button>
+        ))}
+      </div>
+
+      {board.data?.othersHidden && (
+        <p className="rounded-md bg-amber-50 dark:bg-amber-950/40 p-3 text-sm text-amber-900 dark:text-amber-200">
+          {board.data.phase === "final-weeks"
+            ? "The final four weeks are blind: only your own steps are shown until the challenge ends."
+            : "Other walkers appear once the challenge starts."}
+        </p>
+      )}
+      {board.data && !board.data.othersHidden && board.data.phase === "open" && (
+        <p className="text-xs text-muted-foreground">
+          Other walkers appear once their challenge total reaches {fmtSteps(board.data.publicMinSteps)} steps.
+        </p>
+      )}
+
+      {board.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {board.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          Could not load the leaderboard.
+        </p>
+      )}
+
+      {board.data && ranked.length === 0 && <p className="text-sm text-muted-foreground">No steps to show yet.</p>}
+
+      <ol className="divide-y">
+        {ranked.map((r, i) => (
+          <li key={r.id} className={`flex items-center gap-3 py-2 ${r.isMe ? "font-semibold" : ""}`}>
+            <span className="w-6 text-right text-sm text-muted-foreground">{i + 1}</span>
+            <span className="flex-1 truncate">
+              {r.name}
+              {r.isMe && <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs text-emerald-800">you</span>}
+            </span>
+            <span className="tabular-nums">{fmtSteps(r.value)}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 };
 
