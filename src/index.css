@@ -1,70 +1,82 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Warm neutral canvas, white cards, one deep walking-trail green for the
+ * primary action, a soft amber highlight for "this week". System fonts only.
+ */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 40 30% 97%;
+    --foreground: 30 12% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --card-hover: 0 0% 98%;
+    --card-foreground: 30 12% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 30 12% 13%;
 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 158 42% 28%;
+    --primary-foreground: 40 40% 98%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 38 25% 93%;
+    --secondary-foreground: 30 12% 16%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 38 22% 94%;
+    --muted-foreground: 30 8% 37%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 38 28% 92%;
+    --accent-foreground: 30 12% 13%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 4 65% 44%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 1rem;
+    --border: 36 18% 87%;
+    --input: 36 14% 80%;
+    --ring: 158 42% 34%;
+
+    --brand-soft: 152 32% 93%;
+    --brand-soft-foreground: 158 45% 22%;
+    --highlight: 36 85% 93%;
+    --highlight-foreground: 28 65% 27%;
+
+    --radius: 0.75rem;
   }
- 
+
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
- 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --card-hover: 240 10% 4.9%;
- 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
- 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
- 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
- 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
- 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --background: 30 8% 9%;
+    --foreground: 40 20% 93%;
+
+    --card: 30 7% 12%;
+    --card-foreground: 40 20% 93%;
+
+    --popover: 30 7% 12%;
+    --popover-foreground: 40 20% 93%;
+
+    --primary: 155 42% 52%;
+    --primary-foreground: 30 10% 8%;
+
+    --secondary: 30 6% 17%;
+    --secondary-foreground: 40 20% 93%;
+
+    --muted: 30 6% 17%;
+    --muted-foreground: 35 8% 67%;
+
+    --accent: 30 6% 19%;
+    --accent-foreground: 40 20% 93%;
+
+    --destructive: 4 72% 64%;
+    --destructive-foreground: 30 10% 8%;
+
+    --border: 30 6% 21%;
+    --input: 30 6% 28%;
+    --ring: 155 42% 52%;
+
+    --brand-soft: 155 22% 17%;
+    --brand-soft-foreground: 152 45% 75%;
+    --highlight: 32 30% 18%;
+    --highlight-foreground: 36 80% 76%;
   }
 }
 
@@ -72,49 +84,42 @@
   * {
     @apply border-border;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply bg-background text-foreground transition-colors duration-300;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    overflow-x: clip;
+  }
+  /* Numbers line up in tables, totals and inputs. */
+  .tabular-nums,
+  input[inputmode="numeric"] {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-.dot-pattern {
-  @apply dark:opacity-10;
-  background-image: radial-gradient(circle at 1px 1px, rgb(229 231 235) 1px, transparent 0);
-  background-size: 24px 24px;
-}
-
-.glass-card {
-  @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl;
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
+@layer components {
+  .surface {
+    @apply rounded-xl border bg-card text-card-foreground shadow-[0_1px_2px_hsl(30_20%_20%/0.04)];
   }
-  50% {
-    transform: translateY(-10px);
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground;
   }
-  100% {
-    transform: translateY(0px);
+  /* A quiet dotted footpath used as a divider/progress track. */
+  .trail {
+    background-image: radial-gradient(circle, hsl(var(--border)) 1.25px, transparent 1.5px);
+    background-size: 8px 4px;
+    background-repeat: repeat-x;
+    background-position: left center;
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes pulse-subtle {
-  0% {
-    opacity: 0.5;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s ease-in-out infinite;
 }

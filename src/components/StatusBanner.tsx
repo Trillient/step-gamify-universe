@@ -1,45 +1,60 @@
-import { EyeOff, Eye, Flag, Hourglass } from "lucide-react";
+import { Eye, EyeOff, Flag, Hourglass } from "lucide-react";
 import type { ChallengeInfo } from "@/lib/api";
 import { fmtDay } from "@/lib/format";
+import { daysBetween, phaseCopy } from "@/lib/steps";
 
+const ICONS = { upcoming: Hourglass, open: Eye, "final-weeks": EyeOff, ended: Flag } as const;
+
+/** Where we are in the challenge, what other walkers can see, and how far along it is. */
 const StatusBanner = ({ challenge: c }: { challenge: ChallengeInfo }) => {
-  const week = c.currentWeek ? c.periods[c.currentWeek - 1] : null;
-  let Icon = Eye;
-  let title = "";
-  let body = "";
-
-  switch (c.phase) {
-    case "upcoming":
-      Icon = Hourglass;
-      title = `Starts ${fmtDay(c.start)}`;
-      body = "Entries open on the first day of the challenge.";
-      break;
-    case "open":
-      title = `Week ${c.currentWeek} of ${c.periods.length}`;
-      body = `Other walkers' weekly totals show here once they reach ${c.publicMinSteps.toLocaleString("en-AU")} steps.`;
-      break;
-    case "final-weeks":
-      Icon = EyeOff;
-      title = `Week ${c.currentWeek}: final four weeks`;
-      body = `Since ${fmtDay(c.finalWeeksStart)} other walkers' steps are hidden. Keep logging, the standings are revealed after ${fmtDay(c.end)}.`;
-      break;
-    case "ended":
-      Icon = Flag;
-      title = "The challenge has finished";
-      body = "Entries are closed. Qualifying totals from everyone are now shown.";
-      break;
-  }
+  const copy = phaseCopy(c, fmtDay);
+  const Icon = ICONS[c.phase];
+  const totalDays = daysBetween(c.start, c.end) + 1;
+  const dayNumber = Math.min(Math.max(daysBetween(c.start, c.today) + 1, 0), totalDays);
+  const percent = Math.round((dayNumber / totalDays) * 100);
+  const hidden = c.phase === "final-weeks" || c.phase === "upcoming";
 
   return (
-    <section className="flex gap-3 rounded-xl border bg-white/80 dark:bg-gray-900/80 p-4" aria-live="polite">
-      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-      <div>
-        <h2 className="font-semibold">{title}</h2>
-        <p className="text-sm text-muted-foreground">
-          {body}
-          {week && c.phase !== "ended" && ` This week: ${fmtDay(week.start)} to ${fmtDay(week.end)}.`}
-        </p>
+    <section className="surface p-5 sm:p-6" aria-labelledby="phase-title">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1.5">
+          <h1 id="phase-title" className="text-xl font-semibold tracking-tight sm:text-2xl">
+            {copy.title}
+          </h1>
+          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{copy.body}</p>
+        </div>
+        <span
+          className={`inline-flex shrink-0 items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-xs font-medium ${
+            hidden ? "bg-highlight text-highlight-foreground" : "bg-brand-soft text-brand-soft-foreground"
+          }`}
+        >
+          <Icon className="h-3.5 w-3.5" aria-hidden />
+          {copy.privacy}
+        </span>
       </div>
+
+      {c.phase !== "upcoming" && (
+        <div className="mt-5 space-y-1.5">
+          <div
+            className="h-1.5 overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+            aria-label="Challenge progress"
+            aria-valuemin={0}
+            aria-valuemax={totalDays}
+            aria-valuenow={dayNumber}
+            aria-valuetext={`Day ${dayNumber} of ${totalDays}`}
+          >
+            <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{fmtDay(c.start)}</span>
+            <span>
+              {c.phase === "ended" ? "Finished" : `Day ${dayNumber} of ${totalDays}`}
+            </span>
+            <span>{fmtDay(c.end)}</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
