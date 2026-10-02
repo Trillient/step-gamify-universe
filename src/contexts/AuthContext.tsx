@@ -9,6 +9,8 @@ interface AuthContextType {
   configured: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  /** Drop the Firebase account too (best effort), then sign out. Call after the API delete. */
+  forgetAccount: () => Promise<void>;
   getToken: () => Promise<string | null>;
 }
 
@@ -44,11 +46,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (auth) await signOut(auth);
   }, []);
 
+  const forgetAccount = useCallback(async () => {
+    if (!auth) return;
+    // Firebase may want a recent sign-in to delete the user; the app data is already gone either way.
+    await auth.currentUser?.delete().catch(() => undefined);
+    await signOut(auth).catch(() => undefined);
+  }, []);
+
   const getToken = useCallback(async () => (auth?.currentUser ? auth.currentUser.getIdToken() : null), []);
 
   const value = useMemo(
-    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, logout, getToken }),
-    [user, loading, signInWithGoogle, logout, getToken],
+    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, logout, forgetAccount, getToken }),
+    [user, loading, signInWithGoogle, logout, forgetAccount, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -26,6 +26,7 @@ import JourneyCard from "./JourneyCard";
 import StatsHero from "./StatsHero";
 import YourWeeks from "./YourWeeks";
 import PrivacyTimeline from "./PrivacyTimeline";
+import DeleteAccount from "./DeleteAccount";
 
 type Tab = "home" | "stats" | "settings";
 
@@ -187,6 +188,13 @@ const Dashboard = () => {
                 >
                   <LogOut className="h-4 w-4" aria-hidden /> Sign out
                 </button>
+                <DeleteAccount beforeDelete={() => autosave.settled()} />
+                <a
+                  href="/privacy"
+                  className="flex min-h-11 items-center justify-center text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Privacy policy
+                </a>
               </section>
             </div>
           )}

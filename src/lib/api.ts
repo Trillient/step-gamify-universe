@@ -64,6 +64,7 @@ export const api = {
   me: (t: TokenSource) => request<{ displayName: string }>("/api/me", t),
   setName: (t: TokenSource, displayName: string) =>
     request<{ displayName: string }>("/api/me", t, { method: "PUT", body: JSON.stringify({ displayName }) }),
+  deleteMe: (t: TokenSource) => request<{ deleted: true }>("/api/me", t, { method: "DELETE" }),
   entries: (t: TokenSource) => request<{ entries: OwnEntry[] }>("/api/me/entries", t),
   saveEntry: (t: TokenSource, week: number, steps: number) =>
     request<OwnEntry>(`/api/me/entries/${week}`, t, { method: "PUT", body: JSON.stringify({ steps }) }),

@@ -280,3 +280,35 @@ describe("cleanName", () => {
     expect(cleanName("x".repeat(100))).toHaveLength(40);
   });
 });
+
+describe("account deletion", () => {
+  it("deletes own name and every entry, and removes you from others' boards", async () => {
+    const t = setup(at("2026-11-10"));
+    await t.call("/api/me", { as: "a" });
+    await t.put("a", 1, 9000);
+    await t.put("a", 2, 7000);
+    await t.put("b", 1, 8000);
+    expect((await t.board("b")).rows).toHaveLength(2);
+
+    const res = await t.call("/api/me", { method: "DELETE", as: "a" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ deleted: true });
+
+    expect((await t.board("b")).rows).toHaveLength(1);
+    // signing in again starts a fresh, empty account
+    expect((await (await t.call("/api/me/entries", { as: "a" })).json()).entries).toEqual([]);
+  });
+
+  it("leaves other walkers untouched", async () => {
+    const t = setup(at("2026-11-10"));
+    await t.put("a", 1, 9000);
+    await t.put("b", 1, 8000);
+    await t.call("/api/me", { method: "DELETE", as: "a" });
+    expect((await (await t.call("/api/me/entries", { as: "b" })).json()).entries).toHaveLength(1);
+  });
+
+  it("requires authentication", async () => {
+    const t = setup(at("2026-11-10"));
+    expect((await t.call("/api/me", { method: "DELETE" })).status).toBe(401);
+  });
+});
