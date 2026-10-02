@@ -22,6 +22,7 @@ export async function importHealthSteps(start: string, end: string): Promise<num
 export interface NativeAppleCredential {
   idToken: string;
   rawNonce: string;
+  authorizationCode: string;
   givenName: string;
   familyName: string;
 }
@@ -39,5 +40,11 @@ export async function nativeAppleSignIn(): Promise<NativeAppleCredential> {
   if (!handler) throw new Error("unavailable");
   const r = (await handler.postMessage({})) as Partial<NativeAppleCredential> | null;
   if (!r || typeof r.idToken !== "string" || typeof r.rawNonce !== "string") throw new Error("bad-response");
-  return { idToken: r.idToken, rawNonce: r.rawNonce, givenName: r.givenName ?? "", familyName: r.familyName ?? "" };
+  return {
+    idToken: r.idToken,
+    rawNonce: r.rawNonce,
+    authorizationCode: r.authorizationCode ?? "",
+    givenName: r.givenName ?? "",
+    familyName: r.familyName ?? "",
+  };
 }

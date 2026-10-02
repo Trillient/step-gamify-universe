@@ -16,7 +16,7 @@ import {
 
 /** In-app account deletion: removes your name and every step entry from the server. */
 const DeleteAccount = ({ beforeDelete }: { beforeDelete: () => Promise<void> }) => {
-  const { getToken, forgetAccount } = useAuth();
+  const { getToken, forgetAccount, revokeAppleIfNeeded } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,10 +25,12 @@ const DeleteAccount = ({ beforeDelete }: { beforeDelete: () => Promise<void> }) 
     setError(null);
     try {
       await beforeDelete();
+      // Apple sign-ins are revoked first; if that fails nothing is deleted and the user can retry.
+      await revokeAppleIfNeeded();
       await api.deleteMe(getToken);
       await forgetAccount();
     } catch {
-      setError("Could not delete your account. Check your connection and try again.");
+      setError("Could not delete your account. Check your connection, confirm with Apple if asked, and try again.");
       setBusy(false);
     }
   };

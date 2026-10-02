@@ -20,7 +20,7 @@ const Privacy = () => (
     <div className="surface mt-2 space-y-6 p-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-black tracking-tight">Privacy policy</h1>
-        <p className="text-sm font-medium text-muted-foreground">Wooly Walking Challenge 2026 · updated 2 October 2026</p>
+        <p className="text-sm font-medium text-muted-foreground">Wooly Walking Challenge 2026 · updated 3 October 2026</p>
       </div>
 
       <Section title="Who runs this">
@@ -31,15 +31,17 @@ const Privacy = () => (
       </Section>
 
       <Section title="What we store">
-        <p>When you sign in with Google we keep:</p>
+        <p>When you sign in (with Google or Apple) we keep:</p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>your Google account ID, so we know which entries are yours</li>
-          <li>your display name (your Google name until you change it in Settings)</li>
+          <li>your sign-in account ID, so we know which entries are yours</li>
+          <li>your display name (your account name until you change it in Settings)</li>
           <li>the weekly step totals you type in, and when you last changed each one</li>
         </ul>
         <p>
-          We do not store your email address, password, location or contacts. The site only knows the numbers you
-          enter.
+          Our server does not store your email address, password, location or contacts. Google Firebase
+          Authentication, which handles sign-in, keeps the email address of the Google or Apple account you sign in
+          with (or Apple's private relay address) so it can sign you in. The challenge itself only knows the numbers
+          you enter.
         </p>
       </Section>
 
@@ -72,7 +74,12 @@ const Privacy = () => (
       <Section title="Deleting your data">
         <p>
           Open Settings and tap <strong className="text-foreground">Delete my account</strong>. That removes your name
-          and every step total straight away and takes you off the leaderboard. You can also ask Ben to do it for you.
+          and every step total straight away, takes you off the leaderboard, and (if you used Sign in with Apple)
+          revokes the app's access to your Apple ID. You can also ask Ben to do it for you via the{" "}
+          <Link to="/support" className="font-semibold text-primary underline-offset-4 hover:underline">
+            support page
+          </Link>
+          .
         </p>
       </Section>
 

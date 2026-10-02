@@ -2,6 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   OAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  revokeAccessToken,
   signInWithCredential,
   signInWithPopup,
   signOut,
@@ -21,6 +24,11 @@ interface AuthContextType {
   logout: () => Promise<void>;
   /** Drop the Firebase account too (best effort), then sign out. Call after the API delete. */
   forgetAccount: () => Promise<void>;
+  /**
+   * Apple requires revoking Sign in with Apple when an account is deleted. Re-confirms with Apple
+   * and revokes; resolves without doing anything for Google users. Throws if revocation fails.
+   */
+  revokeAppleIfNeeded: () => Promise<void>;
   getToken: () => Promise<string | null>;
 }
 
@@ -90,7 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error) {
       const code = (error as { code?: string; message?: string }).code ?? (error as Error).message;
-      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request" || code === "cancelled") return;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request" || code === "cancelled")
+        return;
       console.error("Apple sign-in failed", error);
       toast.error(signInMessage(code), { duration: 10_000 });
     }
@@ -107,11 +116,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signOut(auth).catch(() => undefined);
   }, []);
 
+  const revokeAppleIfNeeded = useCallback(async () => {
+    const user = auth?.currentUser;
+    if (!auth || !user || !user.providerData.some((p) => p.providerId === "apple.com")) return;
+    if (hasNativeAppleSignIn()) {
+      // iOS app: fresh Apple authorization, then revoke with its authorization code the way
+      // Firebase's iOS SDK does (identitytoolkit accounts:revokeToken, tokenType CODE).
+      const r = await nativeAppleSignIn();
+      await reauthenticateWithCredential(
+        user,
+        new OAuthProvider("apple.com").credential({ idToken: r.idToken, rawNonce: r.rawNonce }),
+      );
+      const res = await fetch(
+        `https://identitytoolkit.googleapis.com/v2/accounts:revokeToken?key=${encodeURIComponent(auth.app.options.apiKey ?? "")}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            providerId: "apple.com",
+            tokenType: "CODE",
+            token: r.authorizationCode,
+            idToken: await user.getIdToken(true),
+          }),
+        },
+      );
+      if (!res.ok) throw new Error(`apple-revoke-${res.status}`);
+    } else {
+      const result = await reauthenticateWithPopup(user, appleProvider);
+      const accessToken = OAuthProvider.credentialFromResult(result)?.accessToken;
+      if (!accessToken) throw new Error("apple-revoke-no-token");
+      await revokeAccessToken(auth, accessToken);
+    }
+  }, []);
+
   const getToken = useCallback(async () => (auth?.currentUser ? auth.currentUser.getIdToken() : null), []);
 
   const value = useMemo(
-    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, signInWithApple, logout, forgetAccount, getToken }),
-    [user, loading, signInWithGoogle, signInWithApple, logout, forgetAccount, getToken],
+    () => ({
+      user,
+      loading,
+      configured: firebaseConfigured,
+      signInWithGoogle,
+      signInWithApple,
+      logout,
+      forgetAccount,
+      revokeAppleIfNeeded,
+      getToken,
+    }),
+    [user, loading, signInWithGoogle, signInWithApple, logout, forgetAccount, revokeAppleIfNeeded, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
