@@ -11,12 +11,12 @@ let space = CGColorSpace(name: CGColorSpace.sRGB)!
 let ctx = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0, space: space,
                     bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
 
-let top = CGColor(colorSpace: space, components: [0x3A / 255, 0x86 / 255, 0x68 / 255, 1])!
-let bottom = CGColor(colorSpace: space, components: [0x1F / 255, 0x52 / 255, 0x3F / 255, 1])!
+let top = CGColor(colorSpace: space, components: [0xF4 / 255, 0x3F / 255, 0x5E / 255, 1])!
+let bottom = CGColor(colorSpace: space, components: [0xBE / 255, 0x12 / 255, 0x3C / 255, 1])!
 let gradient = CGGradient(colorsSpace: space, colors: [top, bottom] as CFArray, locations: [0, 1])!
 ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: size), end: CGPoint(x: 0, y: 0), options: [])
 
-let cream = CGColor(colorSpace: space, components: [0xF9 / 255, 0xF7 / 255, 0xF3 / 255, 1])!
+let cream = CGColor(colorSpace: space, components: [1, 1, 1, 1])!
 
 // Large rounded "W".
 let font = CTFontCreateWithName("ArialRoundedMTBold" as CFString, 560, nil)
