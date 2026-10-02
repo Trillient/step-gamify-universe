@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0BA727C029378A2598506178 /* NavigationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5596081FC15D11D7A49A2FCD /* NavigationPolicyTests.swift */; };
 		27872F6A8B858E3E2C691FD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 324E1AA2F909361EB258BDB3 /* Assets.xcassets */; };
+		2C3B7E10580DEC202C6C888C /* AppleSignInBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A489B8D21C67B3C2C8C9375C /* AppleSignInBridge.swift */; };
 		30273BA44D650675090B94B7 /* WoolyWalkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281B408C81AB7865C0FA7E98 /* WoolyWalkingApp.swift */; };
 		4E1C57F5E64727CC64F36540 /* HealthBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB43C3AC47579906F3B5896 /* HealthBridge.swift */; };
 		887F1607089F7F428BE7690A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A33FEFE9F14BE2261ABD8BA3 /* PrivacyInfo.xcprivacy */; };
@@ -42,6 +43,7 @@
 		8A64E8AA4529D6685FC80C30 /* WoolyWalkingTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WoolyWalkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D342E910D7F8D29B8B81C4E /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		A33FEFE9F14BE2261ABD8BA3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A489B8D21C67B3C2C8C9375C /* AppleSignInBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInBridge.swift; sourceTree = "<group>"; };
 		A66C402B2683F598B7EFD19F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D4ED7951BB4312954E04323A /* HealthBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBridgeTests.swift; sourceTree = "<group>"; };
 		D76AB19845DFF46FA493172B /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
@@ -51,6 +53,7 @@
 		412F64724156B2F9B8D4A6BC /* WoolyWalking */ = {
 			isa = PBXGroup;
 			children = (
+				A489B8D21C67B3C2C8C9375C /* AppleSignInBridge.swift */,
 				324E1AA2F909361EB258BDB3 /* Assets.xcassets */,
 				A66C402B2683F598B7EFD19F /* ContentView.swift */,
 				1EB43C3AC47579906F3B5896 /* HealthBridge.swift */,
@@ -203,6 +206,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C3B7E10580DEC202C6C888C /* AppleSignInBridge.swift in Sources */,
 				B442C892DE2A90767DCE5C52 /* ContentView.swift in Sources */,
 				4E1C57F5E64727CC64F36540 /* HealthBridge.swift in Sources */,
 				DF3496219BF72154D0E94D8D /* NavigationPolicy.swift in Sources */,

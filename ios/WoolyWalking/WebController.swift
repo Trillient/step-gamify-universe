@@ -72,6 +72,8 @@ final class WebController: NSObject, ObservableObject, Identifiable, WKNavigatio
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
         // Apple Health step import, offered by the site only when this handler exists.
         configuration.userContentController.addScriptMessageHandler(HealthBridge(), contentWorld: .page, name: HealthBridge.name)
+        // Native Sign in with Apple; the site uses it instead of a web popup when present.
+        configuration.userContentController.addScriptMessageHandler(AppleSignInBridge(), contentWorld: .page, name: AppleSignInBridge.name)
         self.init(configuration: configuration, context: .main, parent: nil)
         load(SiteConfig.url)
     }

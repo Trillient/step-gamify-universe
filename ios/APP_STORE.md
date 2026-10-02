@@ -15,15 +15,20 @@ Status (2 Oct 2026): the app and website are ready on our side. Submission is bl
 | 5.1.1(v) Account deletion in app | Done: Settings > Delete my account (`DELETE /api/me`) |
 | 5.1.1(i) Privacy policy in app and listing | Done: https://steps.woolston.dev/privacy, linked from sign-in and Settings |
 | 5.1.3 Health data | Done: read-only step count, used only to fill the weekly total, explained in the policy and `NSHealthShareUsageDescription` |
-| 4.8 Login services | **Code ready, switched off**: the button and server support are built; finish the Apple/Firebase setup below after renewal |
+| 4.8 Login services | **Code ready, switched off**: native Sign in with Apple in the app, web popup in browsers, server accepts it; finish the Apple/Firebase setup below after renewal |
 | 2.1 App completeness | Provide a reviewer Google account (a fresh Gmail with no real data) in App Review notes |
-| Google OAuth in a web view | Risk: the shell uses a Safari user agent so Google allows the popup. If review or Google blocks it, move sign-in to `ASWebAuthenticationSession` |
+| Google OAuth in a web view | Risk: the shell uses a Safari user agent so Google allows the popup. Native Sign in with Apple gives reviewers a path that never touches Google |
 
 ## Sign in with Apple (after renewal)
 
-1. developer.apple.com: enable Sign in with Apple on App ID `dev.woolston.steps`; create a Services ID and a Sign in with Apple key.
-2. Firebase console > Authentication > Sign-in method: enable Apple with that Services ID, team ID and key.
-3. Turn the button on: add `VITE_APPLE_SIGNIN=1` to `/root/steps-fb.env` on the server and pass `--build-arg VITE_APPLE_SIGNIN` in `/opt/lab/build/deploy-steps.sh`, then redeploy. The code (button, `signInWithApple`, server accepting `apple.com`) is already in place.
+Code is done: the iOS app shows the system Sign in with Apple sheet (`AppleSignInBridge.swift`, entitlement `com.apple.developer.applesignin`), browsers use Firebase's web popup, and the server accepts `apple.com` tokens. To switch it on:
+
+1. developer.apple.com > Identifiers: on App ID `dev.woolston.steps` enable **Sign in with Apple** (Xcode's automatic signing does this on the first archive). For the website, create a Services ID (e.g. `dev.woolston.steps.web`) with domain `wooly-walking-challenge-2026.firebaseapp.com` and return URL `https://wooly-walking-challenge-2026.firebaseapp.com/__/auth/handler`, and create a Sign in with Apple key.
+2. Firebase console > Project settings: add an iOS app with bundle ID `dev.woolston.steps` (lets Firebase accept the app's native Apple tokens). Then Authentication > Sign-in method > Apple: enable it with the Services ID, team ID, key ID and private key.
+3. On the server add `VITE_APPLE_SIGNIN=1` to `/root/steps-fb.env`, add `--build-arg VITE_APPLE_SIGNIN` to `/opt/lab/build/deploy-steps.sh`, and redeploy. The "Continue with Apple" button then appears on the sign-in page.
+4. Test on a phone: Continue with Apple in the app (native sheet) and in Safari (web popup).
+
+Reviewers can then sign in with their own Apple ID, so no demo account is needed; still list the Google test account as a fallback.
 
 ## Upload
 

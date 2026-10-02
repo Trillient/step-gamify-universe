@@ -28,3 +28,17 @@ final class HealthBridgeTests: XCTestCase {
         XCTAssertNil(HealthBridge.interval(start: "nope", end: "2026-10-15"))
     }
 }
+
+final class AppleSignInBridgeTests: XCTestCase {
+    func testNonceIsRandomAndUrlSafe() {
+        let a = AppleSignInBridge.randomNonce(), b = AppleSignInBridge.randomNonce()
+        XCTAssertEqual(a.count, 32)
+        XCTAssertNotEqual(a, b)
+        XCTAssertTrue(a.allSatisfy { $0.isLetter || $0.isNumber || "-._".contains($0) })
+    }
+
+    func testSha256IsLowercaseHex() {
+        XCTAssertEqual(AppleSignInBridge.sha256("abc"),
+                       "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+    }
+}
