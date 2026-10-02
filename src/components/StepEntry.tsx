@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
-import { AlertCircle, Check, ChevronLeft, ChevronRight, Loader2, RotateCw } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, Heart, Loader2, RotateCw } from "lucide-react";
 import type { AutosaveQueue } from "@/lib/autosave";
 import type { ChallengeInfo, OwnEntry } from "@/lib/api";
 import { fmtDay, fmtSteps } from "@/lib/format";
 import { parseSteps, startedPeriods, weekState } from "@/lib/steps";
+import { canImportHealthSteps, importHealthSteps } from "@/lib/native";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorNote from "./ErrorNote";
@@ -170,6 +171,24 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
   else view = "saving"; // between keystroke and the queue noticing; resolves immediately
 
   const perDay = parsed.kind === "valid" ? Math.round(parsed.steps / period.days) : null;
+  const [health, setHealth] = useState<"idle" | "busy" | "none" | "failed">("idle");
+
+  const fromHealth = async () => {
+    setHealth("busy");
+    try {
+      const steps = await importHealthSteps(period.start, period.end);
+      if (steps === 0) {
+        setHealth("none");
+        return;
+      }
+      typed.current = true;
+      onText(String(steps));
+      autosave.flush();
+      setHealth("idle");
+    } catch {
+      setHealth("failed");
+    }
+  };
 
   // Celebrate only a save this field just made (not the value it opened with).
   const typed = useRef(false);
@@ -276,6 +295,33 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
           )
         )}
       </div>
+
+      {canImportHealthSteps() && (
+        <div className="mb-3 space-y-1.5">
+          <button
+            type="button"
+            onClick={() => void fromHealth()}
+            disabled={health === "busy"}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 bg-card text-sm font-bold transition-transform hover:bg-secondary active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+          >
+            {health === "busy" ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Heart className="h-4 w-4 fill-primary text-primary" aria-hidden />
+            )}
+            Import from Apple Health
+          </button>
+          {health === "none" && (
+            <p className="px-1 text-xs text-muted-foreground">
+              Apple Health has no steps for these dates, or access is turned off in Settings &gt; Health &gt; Data
+              Access.
+            </p>
+          )}
+          {health === "failed" && (
+            <p className="px-1 text-xs text-destructive">Couldn't read Apple Health. Type your total instead.</p>
+          )}
+        </div>
+      )}
 
       <p id="steps-help" className="px-1 text-xs text-muted-foreground">
         Saves by itself when you stop typing, or tap the tick. Rest week? Enter 0.
