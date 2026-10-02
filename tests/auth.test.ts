@@ -43,6 +43,12 @@ describe("firebase token verification", () => {
     await expect(verify(await sign({}, { key: other.privateKey }))).rejects.toThrow();
   });
 
+  it("accepts Sign in with Apple tokens (required by App Store guideline 4.8)", async () => {
+    const { sign, verify } = await setup();
+    const user = await verify(await sign({ firebase: { sign_in_provider: "apple.com" } }));
+    expect(user.uid).toBeTruthy();
+  });
+
   it("rejects tokens that did not come from Google sign-in", async () => {
     const { sign, verify } = await setup();
     await expect(verify(await sign({ firebase: { sign_in_provider: "anonymous" } }))).rejects.toThrow();

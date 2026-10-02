@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { GoogleAuthProvider, getAuth } from "firebase/auth";
+import { GoogleAuthProvider, OAuthProvider, getAuth } from "firebase/auth";
 
 // Client config comes from the build environment (VITE_FIREBASE_*). These
 // identify the Firebase project and are not secrets, but they are kept out of
@@ -19,3 +19,8 @@ const app = firebaseConfigured ? initializeApp(config) : null;
 export const auth = app ? getAuth(app) : null;
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
+
+// Sign in with Apple stays hidden until the Apple provider is set up in Firebase (see ios/APP_STORE.md).
+export const appleSignInEnabled = import.meta.env.VITE_APPLE_SIGNIN === "1";
+export const appleProvider = new OAuthProvider("apple.com");
+appleProvider.addScope("name");

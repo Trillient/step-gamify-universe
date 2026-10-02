@@ -7,6 +7,9 @@ export interface AuthUser {
 
 export type TokenVerifier = (idToken: string) => Promise<AuthUser>;
 
+/** Google, plus Apple because the App Store requires Sign in with Apple next to Google. */
+const ALLOWED_PROVIDERS = new Set(["google.com", "apple.com"]);
+
 const FIREBASE_JWKS_URL = new URL(
   "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
 );
@@ -14,8 +17,8 @@ const FIREBASE_JWKS_URL = new URL(
 /**
  * Verifies a Firebase ID token: RS256 signature against Google's published
  * keys, issuer/audience pinned to the project, expiry, a non-empty `sub`, and
- * Google as the sign-in provider (other providers enabled on the project, such
- * as anonymous, are not allowed in).
+ * Google or Apple as the sign-in provider (other providers enabled on the
+ * project, such as anonymous, are not allowed in).
  */
 export function firebaseVerifier(
   projectId: string,
@@ -32,7 +35,9 @@ export function firebaseVerifier(
       throw new Error("token has no valid subject");
     }
     const firebase = payload.firebase as { sign_in_provider?: unknown } | undefined;
-    if (firebase?.sign_in_provider !== "google.com") throw new Error("not a Google sign-in");
+    if (typeof firebase?.sign_in_provider !== "string" || !ALLOWED_PROVIDERS.has(firebase.sign_in_provider)) {
+      throw new Error("not a Google or Apple sign-in");
+    }
     const authTime = payload.auth_time;
     if (typeof authTime === "number" && authTime > Math.floor(Date.now() / 1000) + 60) {
       throw new Error("auth_time in the future");

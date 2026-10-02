@@ -1,13 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 import { toast } from "sonner";
-import { auth, firebaseConfigured, googleProvider } from "@/lib/firebase";
+import { appleProvider, auth, firebaseConfigured, googleProvider } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   configured: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
   logout: () => Promise<void>;
   /** Drop the Firebase account too (best effort), then sign out. Call after the API delete. */
   forgetAccount: () => Promise<void>;
@@ -42,6 +43,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const signInWithApple = useCallback(async () => {
+    if (!auth) return;
+    try {
+      await signInWithPopup(auth, appleProvider);
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      console.error("Apple sign-in failed", error);
+      toast.error("Could not sign in with Apple. Please try again.");
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     if (auth) await signOut(auth);
   }, []);
@@ -56,8 +69,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const getToken = useCallback(async () => (auth?.currentUser ? auth.currentUser.getIdToken() : null), []);
 
   const value = useMemo(
-    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, logout, forgetAccount, getToken }),
-    [user, loading, signInWithGoogle, logout, forgetAccount, getToken],
+    () => ({ user, loading, configured: firebaseConfigured, signInWithGoogle, signInWithApple, logout, forgetAccount, getToken }),
+    [user, loading, signInWithGoogle, signInWithApple, logout, forgetAccount, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

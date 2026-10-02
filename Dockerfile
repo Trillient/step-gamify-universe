@@ -11,6 +11,8 @@ ARG VITE_FIREBASE_API_KEY
 ARG VITE_FIREBASE_AUTH_DOMAIN
 ARG VITE_FIREBASE_PROJECT_ID
 ARG VITE_FIREBASE_APP_ID
+# set to 1 once Sign in with Apple is configured in Firebase
+ARG VITE_APPLE_SIGNIN
 RUN npm run build
 
 FROM node:22-slim AS runtime
