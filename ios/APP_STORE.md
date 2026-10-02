@@ -25,7 +25,7 @@ Code is done: the iOS app shows the system Sign in with Apple sheet (`AppleSignI
 
 1. developer.apple.com > Identifiers (Richard's account): on App ID `au.com.richardslatter.LoungeRemote` enable **Sign in with Apple** (Xcode's automatic signing does this on the first archive). For the website, create a Services ID (e.g. `dev.woolston.steps.web`) with domain `wooly-walking-challenge-2026.firebaseapp.com` and return URL `https://wooly-walking-challenge-2026.firebaseapp.com/__/auth/handler`, and create a Sign in with Apple key.
 2. Firebase console > Project settings: add an iOS app with bundle ID `au.com.richardslatter.LoungeRemote` (lets Firebase accept the app's native Apple tokens). Then Authentication > Sign-in method > Apple: enable it with the Services ID, team ID, key ID and private key.
-3. On the server add `VITE_APPLE_SIGNIN=1` to `/root/steps-fb.env`, add `--build-arg VITE_APPLE_SIGNIN` to `/opt/lab/build/deploy-steps.sh`, and redeploy. The "Continue with Apple" button then appears on the sign-in page.
+3. On the server add `VITE_APPLE_SIGNIN=app` (iOS app only, enough for App Review) or `VITE_APPLE_SIGNIN=1` (also browsers, needs the Services ID) to `/root/steps-fb.env`, add `--build-arg VITE_APPLE_SIGNIN` to `/opt/lab/build/deploy-steps.sh`, and redeploy. The "Continue with Apple" button then appears on the sign-in page.
 4. Test on a phone: Continue with Apple in the app (native sheet) and in Safari (web popup).
 
 Reviewers can then sign in with their own Apple ID, so no demo account is needed; still list the Google test account as a fallback.

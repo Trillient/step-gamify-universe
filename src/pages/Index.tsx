@@ -6,6 +6,7 @@ import Dashboard from "@/components/Dashboard";
 import PrivacyTimeline from "@/components/PrivacyTimeline";
 import { fmtDay } from "@/lib/format";
 import { appleSignInEnabled } from "@/lib/firebase";
+import { hasNativeAppleSignIn } from "@/lib/native";
 import { chromeIntentUrl, detectEmbeddedBrowser, safariUrl, type EmbeddedBrowser } from "@/lib/inAppBrowser";
 
 const howItWorks = [
@@ -155,7 +156,7 @@ const Index = () => {
           <OpenInBrowser embedded={embedded} onTryAnyway={() => setEmbedded(null)} />
         ) : (
           <>
-            {configured && appleSignInEnabled && (
+            {configured && appleSignInEnabled(hasNativeAppleSignIn()) && (
               <button
                 type="button"
                 onClick={signInWithApple}
