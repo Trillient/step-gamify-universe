@@ -15,7 +15,7 @@ Status (2 Oct 2026): the app and website are ready on our side. Submission is bl
 | 5.1.1(v) Account deletion in app | Done: Settings > Delete my account (`DELETE /api/me`) |
 | 5.1.1(i) Privacy policy in app and listing | Done: https://steps.woolston.dev/privacy, linked from sign-in and Settings |
 | 5.1.3 Health data | Done: read-only step count, used only to fill the weekly total, explained in the policy and `NSHealthShareUsageDescription` |
-| 4.8 Login services | **To do after renewal**: Google sign-in requires Sign in with Apple as well (see below) |
+| 4.8 Login services | **Code ready, switched off**: the button and server support are built; finish the Apple/Firebase setup below after renewal |
 | 2.1 App completeness | Provide a reviewer Google account (a fresh Gmail with no real data) in App Review notes |
 | Google OAuth in a web view | Risk: the shell uses a Safari user agent so Google allows the popup. If review or Google blocks it, move sign-in to `ASWebAuthenticationSession` |
 
@@ -23,7 +23,7 @@ Status (2 Oct 2026): the app and website are ready on our side. Submission is bl
 
 1. developer.apple.com: enable Sign in with Apple on App ID `dev.woolston.steps`; create a Services ID and a Sign in with Apple key.
 2. Firebase console > Authentication > Sign-in method: enable Apple with that Services ID, team ID and key.
-3. Add a "Continue with Apple" button next to Google (`OAuthProvider("apple.com")` with `signInWithPopup`). `server/auth.ts` currently rejects any provider other than `google.com`; allow `apple.com` there too.
+3. Turn the button on: add `VITE_APPLE_SIGNIN=1` to `/root/steps-fb.env` on the server and pass `--build-arg VITE_APPLE_SIGNIN` in `/opt/lab/build/deploy-steps.sh`, then redeploy. The code (button, `signInWithApple`, server accepting `apple.com`) is already in place.
 
 ## Upload
 
