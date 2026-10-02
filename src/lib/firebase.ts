@@ -21,6 +21,9 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
 // Sign in with Apple stays hidden until the Apple provider is set up in Firebase (see ios/APP_STORE.md).
-export const appleSignInEnabled = import.meta.env.VITE_APPLE_SIGNIN === "1";
+// "app": only inside the iOS app (native sheet, needs no web Services ID); "1": also in browsers.
+const appleMode = import.meta.env.VITE_APPLE_SIGNIN;
+export const appleSignInEnabled = (inNativeApp: boolean): boolean =>
+  appleMode === "1" || (appleMode === "app" && inNativeApp);
 export const appleProvider = new OAuthProvider("apple.com");
 appleProvider.addScope("name");
