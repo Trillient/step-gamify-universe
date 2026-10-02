@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { AutosaveQueue } from "@/lib/autosave";
 import type { ChallengeInfo, Leaderboard, OwnEntry } from "@/lib/api";
 import { fmtDay, fmtSteps } from "@/lib/format";
-import { ordinal, ownTotals, rankRows, startedPeriods, sumValues } from "@/lib/steps";
+import { ordinal, ownTotals, rankRows, startedPeriods } from "@/lib/steps";
 
 interface Props {
   challenge: ChallengeInfo;
@@ -13,22 +13,19 @@ interface Props {
 }
 
 const Stat = ({ label, value, detail }: { label: string; value: ReactNode; detail: ReactNode }) => (
-  <div className="surface min-w-0 p-4 sm:p-5">
+  <div className="surface flex min-h-28 min-w-0 flex-col items-center justify-center p-4 text-center">
     <dt className="eyebrow">{label}</dt>
-    <dd className="mt-2 truncate text-2xl font-semibold tabular-nums tracking-tight sm:text-[1.75rem]">{value}</dd>
-    <dd className="mt-1 truncate text-xs text-muted-foreground sm:text-sm">{detail}</dd>
+    <dd className="big-number mt-1 max-w-full truncate text-2xl">{value}</dd>
+    <dd className="mt-0.5 max-w-full truncate text-xs font-medium text-muted-foreground">{detail}</dd>
   </div>
 );
 
 const Loading = () => <span className="text-muted-foreground">…</span>;
 
-/** Four headline numbers: total, weeks logged, this week, rank. */
+/** Four headline tiles under the Stats hero: weeks logged, rank, this week, best week. */
 const SummaryStats = ({ challenge: c, entries, board, boardFailed, autosave }: Props) => {
   const own = ownTotals(entries, (w) => autosave.confirmedValue(w), c.periods.length);
-  const total = sumValues(own);
   const started = startedPeriods(c.periods, c.today);
-  const loggedDays = [...own.keys()].reduce((days, w) => days + (c.periods[w - 1]?.days ?? 0), 0);
-  const perDay = loggedDays > 0 ? Math.round(total / loggedDays) : null;
 
   const thisWeek = c.currentWeek ? own.get(c.currentWeek) : undefined;
   const best = [...own.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
@@ -56,12 +53,7 @@ const SummaryStats = ({ challenge: c, entries, board, boardFailed, autosave }: P
   }
 
   return (
-    <dl className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label="Your summary">
-      <Stat
-        label="Your total"
-        value={entries ? fmtSteps(total) : <Loading />}
-        detail={perDay !== null ? `About ${fmtSteps(perDay)} a day` : "Steps logged so far"}
-      />
+    <dl className="grid grid-cols-2 gap-4" aria-label="Your summary">
       <Stat
         label="Weeks logged"
         value={entries ? `${own.size} of ${started.length || c.periods.length}` : <Loading />}
@@ -73,20 +65,17 @@ const SummaryStats = ({ challenge: c, entries, board, boardFailed, autosave }: P
               : `${started.length - own.size} still to log`
         }
       />
-      {c.currentWeek ? (
-        <Stat
-          label={`Week ${c.currentWeek}`}
-          value={thisWeek !== undefined ? fmtSteps(thisWeek) : "–"}
-          detail={thisWeek !== undefined ? "Logged this week" : "Not logged yet"}
-        />
-      ) : (
-        <Stat
-          label="Best week"
-          value={best ? fmtSteps(best[1]) : "–"}
-          detail={best ? `Week ${best[0]}` : "Nothing logged yet"}
-        />
-      )}
       <Stat label="Your rank" value={rankValue} detail={rankDetail} />
+      <Stat
+        label={c.currentWeek ? `Week ${c.currentWeek}` : "This week"}
+        value={thisWeek !== undefined ? fmtSteps(thisWeek) : "–"}
+        detail={!c.currentWeek ? "No week running" : thisWeek !== undefined ? "Logged this week" : "Not logged yet"}
+      />
+      <Stat
+        label="Best week"
+        value={best ? fmtSteps(best[1]) : "–"}
+        detail={best ? `Week ${best[0]}` : "Nothing logged yet"}
+      />
     </dl>
   );
 };

@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import type { AutosaveQueue } from "@/lib/autosave";
 import type { ChallengeInfo, OwnEntry } from "@/lib/api";
 import { fmtSteps } from "@/lib/format";
-import { momentum, nextMarker, streaks, visibilityCue, weeklySeries } from "@/lib/progress";
+import { momentum, streaks, weeklySeries } from "@/lib/progress";
 import { ownTotals, plural, sumValues } from "@/lib/steps";
 import { cn } from "@/lib/utils";
 import type { ChartMode } from "./WeeklyChart";
@@ -40,8 +40,6 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
   const best = points.find((p) => p.isBest);
   const streak = streaks(c.periods, c.today, own);
   const trend = momentum(own);
-  const marker = nextMarker(total, c.publicMinSteps);
-  const visibility = visibilityCue(c.phase, total, c.publicMinSteps);
 
   const summary =
     own.size === 0
@@ -51,12 +49,12 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
         : `Running total ${fmtSteps(total)} steps across ${plural(own.size, "logged week")}.`;
 
   return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="progress-heading">
+    <section className="surface p-6" aria-labelledby="progress-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="progress-heading" className="text-lg font-semibold tracking-tight">
-          Your walk
+        <h2 id="progress-heading" className="text-xl font-bold tracking-tight">
+          Weekly effort
         </h2>
-        <div role="group" aria-label="Chart view" className="inline-flex rounded-lg bg-muted p-0.5 text-sm">
+        <div role="group" aria-label="Chart view" className="inline-flex rounded-xl bg-muted p-1 text-sm">
           {(
             [
               ["weekly", "Weekly"],
@@ -69,7 +67,7 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
               aria-pressed={mode === value}
               onClick={() => setMode(value)}
               className={cn(
-                "h-11 rounded-md px-3 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8",
+                "h-11 rounded-lg px-3 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 mode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -94,13 +92,13 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
       </p>
 
       <div className="mt-4 h-48 sm:h-56">
-        <Suspense fallback={<div className="h-full rounded-lg bg-muted/50" aria-hidden />}>
+        <Suspense fallback={<div className="h-full rounded-2xl bg-muted/50" aria-hidden />}>
           <WeeklyChart points={points} periods={c.periods} mode={mode} animate={!reducedMotion} />
         </Suspense>
       </div>
 
       <details className="group mt-2 text-sm">
-        <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-8">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-lg text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           Show as a table
         </summary>
         <div className="mt-2 overflow-x-auto">
@@ -159,26 +157,6 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
         />
       </dl>
 
-      <div className="mt-4 rounded-lg bg-muted/60 px-3 py-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm">
-          <span className="font-medium">
-            {marker.isVisibility ? "Next: show on the board" : `Next marker: ${fmtSteps(marker.target)}`}
-          </span>
-          <span className="tabular-nums text-muted-foreground">{fmtSteps(marker.remaining)} to go</span>
-        </div>
-        <div
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-card"
-          role="progressbar"
-          aria-label={`Progress to ${fmtSteps(marker.target)} steps`}
-          aria-valuemin={marker.previous}
-          aria-valuemax={marker.target}
-          aria-valuenow={total}
-          aria-valuetext={`${fmtSteps(total)} of ${fmtSteps(marker.target)} steps`}
-        >
-          <div className="h-full rounded-full bg-primary" style={{ width: `${marker.fraction * 100}%` }} />
-        </div>
-        {visibility && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{visibility}</p>}
-      </div>
     </section>
   );
 };
@@ -186,7 +164,7 @@ const MyProgress = ({ challenge: c, entries, autosave }: Props) => {
 const Reward = ({ label, value, detail }: { label: string; value: ReactNode; detail: ReactNode }) => (
   <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-3 sm:block">
     <dt className="eyebrow row-span-2">{label}</dt>
-    <dd className="truncate text-right text-lg font-semibold tabular-nums tracking-tight sm:mt-1 sm:text-left">{value}</dd>
+    <dd className="big-number truncate text-right text-lg sm:mt-1 sm:text-left">{value}</dd>
     <dd className="truncate text-right text-xs text-muted-foreground sm:text-left">{detail}</dd>
   </div>
 );
