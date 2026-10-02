@@ -10,9 +10,11 @@
 		0BA727C029378A2598506178 /* NavigationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5596081FC15D11D7A49A2FCD /* NavigationPolicyTests.swift */; };
 		27872F6A8B858E3E2C691FD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 324E1AA2F909361EB258BDB3 /* Assets.xcassets */; };
 		30273BA44D650675090B94B7 /* WoolyWalkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281B408C81AB7865C0FA7E98 /* WoolyWalkingApp.swift */; };
+		4E1C57F5E64727CC64F36540 /* HealthBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB43C3AC47579906F3B5896 /* HealthBridge.swift */; };
 		887F1607089F7F428BE7690A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A33FEFE9F14BE2261ABD8BA3 /* PrivacyInfo.xcprivacy */; };
 		9241771D4E888DFB3CB89D9B /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D342E910D7F8D29B8B81C4E /* WebView.swift */; };
 		B442C892DE2A90767DCE5C52 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66C402B2683F598B7EFD19F /* ContentView.swift */; };
+		D54041D465380C6FBC75426F /* HealthBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ED7951BB4312954E04323A /* HealthBridgeTests.swift */; };
 		DF3496219BF72154D0E94D8D /* NavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8957D7D4B2CDB1ABA0DCEBDF /* NavigationPolicy.swift */; };
 		F8EC5381657F70BCFBD8E571 /* WebController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1092168D911C63B7CDCB9479 /* WebController.swift */; };
 /* End PBXBuildFile section */
@@ -29,6 +31,8 @@
 
 /* Begin PBXFileReference section */
 		1092168D911C63B7CDCB9479 /* WebController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebController.swift; sourceTree = "<group>"; };
+		1C6533C3330E2DA39A3F66C3 /* WoolyWalking.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WoolyWalking.entitlements; sourceTree = "<group>"; };
+		1EB43C3AC47579906F3B5896 /* HealthBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBridge.swift; sourceTree = "<group>"; };
 		281B408C81AB7865C0FA7E98 /* WoolyWalkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WoolyWalkingApp.swift; sourceTree = "<group>"; };
 		324E1AA2F909361EB258BDB3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3F8EC8982A6B018E4DB42FE0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -39,6 +43,7 @@
 		9D342E910D7F8D29B8B81C4E /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		A33FEFE9F14BE2261ABD8BA3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A66C402B2683F598B7EFD19F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D4ED7951BB4312954E04323A /* HealthBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBridgeTests.swift; sourceTree = "<group>"; };
 		D76AB19845DFF46FA493172B /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -48,11 +53,13 @@
 			children = (
 				324E1AA2F909361EB258BDB3 /* Assets.xcassets */,
 				A66C402B2683F598B7EFD19F /* ContentView.swift */,
+				1EB43C3AC47579906F3B5896 /* HealthBridge.swift */,
 				3F8EC8982A6B018E4DB42FE0 /* Info.plist */,
 				8957D7D4B2CDB1ABA0DCEBDF /* NavigationPolicy.swift */,
 				A33FEFE9F14BE2261ABD8BA3 /* PrivacyInfo.xcprivacy */,
 				1092168D911C63B7CDCB9479 /* WebController.swift */,
 				9D342E910D7F8D29B8B81C4E /* WebView.swift */,
+				1C6533C3330E2DA39A3F66C3 /* WoolyWalking.entitlements */,
 				281B408C81AB7865C0FA7E98 /* WoolyWalkingApp.swift */,
 			);
 			path = WoolyWalking;
@@ -61,6 +68,7 @@
 		6D2D3F3EE0E6EF4BFB2BAB43 /* WoolyWalkingTests */ = {
 			isa = PBXGroup;
 			children = (
+				D4ED7951BB4312954E04323A /* HealthBridgeTests.swift */,
 				5596081FC15D11D7A49A2FCD /* NavigationPolicyTests.swift */,
 			);
 			path = WoolyWalkingTests;
@@ -186,6 +194,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D54041D465380C6FBC75426F /* HealthBridgeTests.swift in Sources */,
 				0BA727C029378A2598506178 /* NavigationPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -195,6 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B442C892DE2A90767DCE5C52 /* ContentView.swift in Sources */,
+				4E1C57F5E64727CC64F36540 /* HealthBridge.swift in Sources */,
 				DF3496219BF72154D0E94D8D /* NavigationPolicy.swift in Sources */,
 				F8EC5381657F70BCFBD8E571 /* WebController.swift in Sources */,
 				9241771D4E888DFB3CB89D9B /* WebView.swift in Sources */,
@@ -360,6 +370,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WoolyWalking/WoolyWalking.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = WoolyWalking/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -393,6 +404,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WoolyWalking/WoolyWalking.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = WoolyWalking/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

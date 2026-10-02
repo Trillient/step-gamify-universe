@@ -25,6 +25,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSAppUsesNonExemptEncryption: false
+        NSHealthShareUsageDescription: Wooly Walking reads your step count so it can fill in your weekly total for you. It never writes to Health or shares your health data.
         UILaunchScreen:
           UIColorName: Background
         UIApplicationSceneManifest:
@@ -38,6 +39,11 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+    entitlements:
+      path: WoolyWalking/WoolyWalking.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

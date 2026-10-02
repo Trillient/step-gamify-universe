@@ -70,6 +70,8 @@ final class WebController: NSObject, ObservableObject, Identifiable, WKNavigatio
         configuration.websiteDataStore = .default()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        // Apple Health step import, offered by the site only when this handler exists.
+        configuration.userContentController.addScriptMessageHandler(HealthBridge(), contentWorld: .page, name: HealthBridge.name)
         self.init(configuration: configuration, context: .main, parent: nil)
         load(SiteConfig.url)
     }
