@@ -1,96 +1,150 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
-import { AlertCircle, Check, Loader2, RotateCw } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, Loader2, RotateCw } from "lucide-react";
 import type { AutosaveQueue } from "@/lib/autosave";
 import type { ChallengeInfo, OwnEntry } from "@/lib/api";
 import { fmtDay, fmtSteps } from "@/lib/format";
-import { parseSteps, startedPeriods } from "@/lib/steps";
+import { parseSteps, startedPeriods, weekState } from "@/lib/steps";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorNote from "./ErrorNote";
-import WeekPicker from "./WeekPicker";
 
 interface Props {
   challenge: ChallengeInfo;
   entries: UseQueryResult<{ entries: OwnEntry[] }>;
   autosave: AutosaveQueue;
+  /** Week being edited (owned by the dashboard so Stats can jump to a week). */
+  chosen: number | null;
+  onSelect: (week: number) => void;
 }
 
 type View = "invalid" | "saving" | "error" | "saved" | "blank-kept" | "empty";
 
+/** A small coral/amber burst. Loaded on demand, and skipped for reduced motion. */
+function celebrate() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  void import("canvas-confetti").then(({ default: confetti }) =>
+    confetti({
+      particleCount: 90,
+      spread: 75,
+      startVelocity: 38,
+      origin: { y: 0.45 },
+      colors: ["#e0234a", "#ff8fa3", "#f6b73c", "#ffd98a"],
+      disableForReducedMotion: true,
+    }),
+  );
+}
+
 /**
- * Pick a week, type the total, pause: it saves. Enter or leaving the field
- * saves straight away. What the user is typing always wins over refetched
- * data for the selected week, so a background refresh can't overwrite it.
+ * Step through the started weeks, type the total, pause: it saves. Enter, the
+ * save button or leaving the field saves straight away. What the user is
+ * typing always wins over refetched data for the selected week.
  */
-const StepEntry = ({ challenge: c, entries, autosave }: Props) => {
+const StepEntry = ({ challenge: c, entries, autosave, chosen, onSelect }: Props) => {
   const writable = c.phase === "open" || c.phase === "final-weeks";
   const started = startedPeriods(c.periods, c.today);
-  const [selected, setSelected] = useState<number | null>(null);
   const [draft, setDraft] = useState<{ week: number; text: string } | null>(null);
 
-  const chosen = selected ?? c.currentWeek ?? started[started.length - 1]?.week ?? null;
   const period = chosen ? c.periods[chosen - 1] : undefined;
   const server = new Map((entries.data?.entries ?? []).map((e) => [e.week, e.steps]));
   const valueOf = (week: number) => autosave.latest(week) ?? server.get(week);
+  const first = started[0]?.week ?? 1;
+  const last = started[started.length - 1]?.week ?? 1;
 
-  const select = (week: number) => {
-    autosave.flush();
-    setSelected(week);
-    setDraft(null);
-  };
+  if (!writable || !period) {
+    return (
+      <section className="surface p-6" aria-labelledby="log-heading">
+        <h2 id="log-heading" className="text-xl font-bold tracking-tight">
+          {c.phase === "upcoming" ? "Logging opens soon" : "Entries are closed"}
+        </h2>
+        <p className="mt-1 text-sm font-medium text-muted-foreground">
+          {c.phase === "upcoming"
+            ? `You can log your first week from ${fmtDay(c.start)}. Each week opens on its first day.`
+            : `Entries closed on ${fmtDay(c.end)}. Everything you logged is on the Stats tab.`}
+        </p>
+      </section>
+    );
+  }
+
+  const isCurrent = weekState(period, c.today) === "current";
 
   return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="log-heading">
-      <div className="mb-4 space-y-1">
-        <h2 id="log-heading" className="text-lg font-semibold tracking-tight">
-          {writable ? "Log your steps" : "Your weeks"}
+    <section className="surface flex flex-col gap-5 p-6" aria-labelledby="log-heading">
+      <div className="space-y-1">
+        <h2 id="log-heading" className="text-xl font-bold tracking-tight">
+          {isCurrent ? "Log this week" : `Log week ${period.week}`}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          {c.phase === "upcoming"
-            ? `Entries open on ${fmtDay(c.start)}. Each week opens on its first day.`
-            : c.phase === "ended"
-              ? `Entries closed on ${fmtDay(c.end)}. Here is everything you logged.`
-              : "One total per week. You can update any week that has started until the challenge ends."}
+        <p className="text-sm font-medium text-muted-foreground">
+          One total per week. You can update any started week until {fmtDay(c.end)}.
         </p>
       </div>
 
-      <WeekPicker
-        periods={c.periods}
-        today={c.today}
-        selected={writable ? chosen : null}
-        valueOf={valueOf}
-        statusOf={(w) => autosave.statusOf(w)}
-        onSelect={writable ? select : undefined}
-      />
-
-      {writable && period && (
-        <div className="mt-5 border-t pt-5">
-          {entries.isError && !entries.data ? (
-            <ErrorNote message="Could not load your steps." onRetry={() => entries.refetch()} />
-          ) : !entries.data ? (
-            <Skeleton className="h-28 rounded-lg" />
-          ) : (
-            <EntryField
-              key={period.week}
-              challenge={c}
-              week={period.week}
-              text={draft?.week === period.week ? draft.text : String(valueOf(period.week) ?? "")}
-              serverSteps={server.get(period.week)}
-              autosave={autosave}
-              onText={(text) => {
-                setDraft({ week: period.week, text });
-                const parsed = parseSteps(text, c.maxWeeklySteps);
-                autosave.change(period.week, parsed.kind === "valid" ? parsed.steps : null, server.get(period.week));
-              }}
-            />
-          )}
+      <div className="flex items-center justify-between rounded-[2.5rem] border bg-background p-1.5">
+        <StepButton label="Previous week" disabled={period.week <= first} onClick={() => onSelect(period.week - 1)}>
+          <ChevronLeft className="h-7 w-7" strokeWidth={3} aria-hidden />
+        </StepButton>
+        <div className="flex min-w-0 flex-1 flex-col items-center text-center" aria-live="polite">
+          <span className="flex items-center gap-2 text-base font-black uppercase tracking-widest text-primary">
+            Week {period.week}
+            {isCurrent && (
+              <span className="rounded-full bg-highlight px-2 py-0.5 text-[10px] font-black leading-4 tracking-wider text-highlight-foreground">
+                Now
+              </span>
+            )}
+          </span>
+          <span className="text-xs font-bold text-muted-foreground">
+            {fmtDay(period.start)} to {fmtDay(period.end)} · {period.days} days
+          </span>
         </div>
+        <StepButton label="Next week" disabled={period.week >= last} onClick={() => onSelect(period.week + 1)}>
+          <ChevronRight className="h-7 w-7" strokeWidth={3} aria-hidden />
+        </StepButton>
+      </div>
+
+      {entries.isError && !entries.data ? (
+        <ErrorNote message="Could not load your steps." onRetry={() => entries.refetch()} />
+      ) : !entries.data ? (
+        <Skeleton className="h-20 rounded-2xl" />
+      ) : (
+        <EntryField
+          key={period.week}
+          challenge={c}
+          week={period.week}
+          text={draft?.week === period.week ? draft.text : String(valueOf(period.week) ?? "")}
+          serverSteps={server.get(period.week)}
+          autosave={autosave}
+          onText={(text) => {
+            setDraft({ week: period.week, text });
+            const parsed = parseSteps(text, c.maxWeeklySteps);
+            autosave.change(period.week, parsed.kind === "valid" ? parsed.steps : null, server.get(period.week));
+          }}
+        />
       )}
     </section>
   );
 };
+
+const StepButton = ({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    aria-label={label}
+    disabled={disabled}
+    onClick={onClick}
+    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-transform hover:bg-secondary active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30 disabled:active:scale-100"
+  >
+    {children}
+  </button>
+);
 
 interface FieldProps {
   challenge: ChallengeInfo;
@@ -117,6 +171,16 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
 
   const perDay = parsed.kind === "valid" ? Math.round(parsed.steps / period.days) : null;
 
+  // Celebrate only a save this field just made (not the value it opened with).
+  const typed = useRef(false);
+  const prev = useRef<View>(view);
+  useEffect(() => {
+    if (typed.current && prev.current === "saving" && view === "saved" && parsed.kind === "valid" && parsed.steps > 0) {
+      celebrate();
+    }
+    prev.current = view;
+  }, [view, parsed]);
+
   return (
     <form
       noValidate
@@ -125,37 +189,43 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
         autosave.flush();
       }}
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <label htmlFor="steps" className="font-medium">
-          Steps for week {week}
-        </label>
-        <span className="text-sm text-muted-foreground">
-          {fmtDay(period.start)} to {fmtDay(period.end)} · {period.days} days
-        </span>
-      </div>
-
-      <div className="relative mt-2.5">
-        <Input
+      <label htmlFor="steps" className="sr-only">
+        Steps for week {week}, {fmtDay(period.start)} to {fmtDay(period.end)}
+      </label>
+      <div className="flex items-center gap-3">
+        <input
           id="steps"
           name="steps"
           inputMode="numeric"
           enterKeyHint="done"
           autoComplete="off"
           spellCheck={false}
-          placeholder="e.g. 52,000"
+          placeholder="0"
           value={text}
-          onChange={(e) => onText(e.target.value)}
+          onChange={(e) => {
+            typed.current = true;
+            onText(e.target.value);
+          }}
           onBlur={() => autosave.flush()}
           aria-invalid={view === "invalid"}
           aria-describedby="steps-status steps-help"
-          className="h-12 pr-16 text-lg font-medium md:text-lg"
+          className="big-number h-20 w-full min-w-0 flex-1 rounded-2xl border-2 border-transparent bg-background text-center text-4xl text-foreground outline-none transition-colors placeholder:text-muted-foreground/40 focus:border-primary aria-[invalid=true]:border-destructive"
         />
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
-          steps
-        </span>
+        <button
+          type="submit"
+          aria-label="Save steps"
+          disabled={view === "invalid" || parsed.kind === "empty"}
+          className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:bg-primary/90 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:active:scale-100"
+        >
+          {view === "saving" ? (
+            <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+          ) : (
+            <Check className="h-8 w-8" strokeWidth={3} aria-hidden />
+          )}
+        </button>
       </div>
 
-      <div className="mt-2 flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <div className="mt-2 flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
         <div id="steps-status" role="status" aria-live="polite" className="flex min-w-0 items-center gap-2 text-sm">
           {view === "saving" && (
             <>
@@ -165,8 +235,10 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
           )}
           {view === "saved" && (
             <>
-              <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-              <span>Saved</span>
+              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Check className="h-3.5 w-3.5" aria-hidden />
+              </span>
+              <span className="font-semibold">Saved</span>
             </>
           )}
           {view === "invalid" && (
@@ -194,7 +266,7 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
         </div>
 
         {view === "error" ? (
-          <Button type="button" variant="outline" size="sm" className="h-11 sm:h-9" onClick={() => autosave.retry(week)}>
+          <Button type="button" variant="outline" size="sm" className="h-11 rounded-xl" onClick={() => autosave.retry(week)}>
             <RotateCw aria-hidden /> Retry
           </Button>
         ) : (
@@ -205,8 +277,8 @@ const EntryField = ({ challenge: c, week, text, serverSteps, autosave, onText }:
         )}
       </div>
 
-      <p id="steps-help" className="text-xs text-muted-foreground">
-        Saves automatically when you stop typing. Press Enter to save straight away. Rest week? Enter 0.
+      <p id="steps-help" className="px-1 text-xs text-muted-foreground">
+        Saves by itself when you stop typing, or tap the tick. Rest week? Enter 0.
       </p>
     </form>
   );

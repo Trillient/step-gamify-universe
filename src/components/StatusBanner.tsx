@@ -2,6 +2,7 @@ import { Eye, EyeOff, Flag, Hourglass } from "lucide-react";
 import type { ChallengeInfo } from "@/lib/api";
 import { fmtDay } from "@/lib/format";
 import { daysBetween, phaseCopy } from "@/lib/steps";
+import { cn } from "@/lib/utils";
 
 const ICONS = { upcoming: Hourglass, open: Eye, "final-weeks": EyeOff, ended: Flag } as const;
 
@@ -12,31 +13,35 @@ const StatusBanner = ({ challenge: c }: { challenge: ChallengeInfo }) => {
   const totalDays = daysBetween(c.start, c.end) + 1;
   const dayNumber = Math.min(Math.max(daysBetween(c.start, c.today) + 1, 0), totalDays);
   const percent = Math.round((dayNumber / totalDays) * 100);
-  const hidden = c.phase === "final-weeks" || c.phase === "upcoming";
+  const blind = c.phase === "final-weeks";
 
   return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="phase-title">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-1.5">
-          <h1 id="phase-title" className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {copy.title}
-          </h1>
-          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{copy.body}</p>
-        </div>
-        <span
-          className={`inline-flex shrink-0 items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-xs font-medium ${
-            hidden ? "bg-highlight text-highlight-foreground" : "bg-brand-soft text-brand-soft-foreground"
-          }`}
-        >
-          <Icon className="h-3.5 w-3.5" aria-hidden />
-          {copy.privacy}
-        </span>
-      </div>
+    <section
+      className={cn(
+        "rounded-[2rem] border p-5 shadow-sm",
+        blind ? "border-primary/20 bg-primary/10" : "bg-card",
+      )}
+      aria-labelledby="phase-title"
+    >
+      <p
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wider",
+          blind ? "bg-card text-primary" : "bg-brand-soft text-brand-soft-foreground",
+        )}
+      >
+        <Icon className="h-3.5 w-3.5" aria-hidden />
+        {copy.privacy}
+      </p>
+      <h2 id="phase-title" className="mt-3 text-2xl font-black tracking-tight">
+        {blind && <span aria-hidden>🤫 </span>}
+        {copy.title}
+      </h2>
+      <p className="mt-1 text-sm font-medium leading-relaxed text-muted-foreground">{copy.body}</p>
 
       {c.phase !== "upcoming" && (
-        <div className="mt-5 space-y-1.5">
+        <div className="mt-4 space-y-1.5">
           <div
-            className="h-1.5 overflow-hidden rounded-full bg-muted"
+            className="h-2.5 overflow-hidden rounded-full bg-secondary"
             role="progressbar"
             aria-label="Challenge progress"
             aria-valuemin={0}
@@ -44,13 +49,14 @@ const StatusBanner = ({ challenge: c }: { challenge: ChallengeInfo }) => {
             aria-valuenow={dayNumber}
             aria-valuetext={`Day ${dayNumber} of ${totalDays}`}
           >
-            <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-[width] duration-700"
+              style={{ width: `${percent}%` }}
+            />
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs font-bold text-muted-foreground">
             <span>{fmtDay(c.start)}</span>
-            <span>
-              {c.phase === "ended" ? "Finished" : `Day ${dayNumber} of ${totalDays}`}
-            </span>
+            <span>{c.phase === "ended" ? "Finished" : `Day ${dayNumber} of ${totalDays}`}</span>
             <span>{fmtDay(c.end)}</span>
           </div>
         </div>

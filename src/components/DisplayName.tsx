@@ -27,8 +27,8 @@ const DisplayName = () => {
   const changed = me.data !== undefined && trimmed !== "" && trimmed !== me.data.displayName;
 
   return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="name-heading">
-      <h2 id="name-heading" className="text-lg font-semibold tracking-tight">
+    <section className="surface p-6" aria-labelledby="name-heading">
+      <h2 id="name-heading" className="text-xl font-bold tracking-tight">
         Your name
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">How you appear to other walkers on the board.</p>
@@ -53,9 +53,9 @@ const DisplayName = () => {
             save.reset();
           }}
           aria-describedby="name-status"
-          className="h-11 min-w-0 flex-1"
+          className="h-12 min-w-0 flex-1 rounded-2xl font-semibold"
         />
-        <Button type="submit" variant="outline" className="h-11" disabled={!changed || save.isPending}>
+        <Button type="submit" className="h-12 rounded-2xl" disabled={!changed || save.isPending}>
           {save.isPending ? "Saving…" : "Save name"}
         </Button>
       </form>

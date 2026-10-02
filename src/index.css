@@ -3,80 +3,85 @@
 @tailwind utilities;
 
 /*
- * Warm neutral canvas, white cards, one deep walking-trail green for the
- * primary action, a soft amber highlight for "this week". System fonts only.
+ * Zinc neutrals, one rose accent for action and progress, amber for "this
+ * week". Inter, heavy weights for numbers, 2rem cards.
  */
 @layer base {
   :root {
-    --background: 40 30% 97%;
-    --foreground: 30 12% 13%;
+    /* zinc neutrals */
+    --background: 0 0% 98%;
+    --foreground: 240 6% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 30 12% 13%;
+    --card-foreground: 240 6% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 12% 13%;
+    --popover-foreground: 240 6% 10%;
 
-    --primary: 158 42% 28%;
-    --primary-foreground: 40 40% 98%;
+    /* rose-600: white text on it is 4.7:1 */
+    --primary: 347 77% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 38 25% 93%;
-    --secondary-foreground: 30 12% 16%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
 
-    --muted: 38 22% 94%;
-    --muted-foreground: 30 8% 37%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 38 28% 92%;
-    --accent-foreground: 30 12% 13%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
 
-    --destructive: 4 65% 44%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 36 18% 87%;
-    --input: 36 14% 80%;
-    --ring: 158 42% 34%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 347 77% 50%;
 
-    --brand-soft: 152 32% 93%;
-    --brand-soft-foreground: 158 45% 22%;
-    --highlight: 36 85% 93%;
-    --highlight-foreground: 28 65% 27%;
+    /* rose-100 / rose-700 */
+    --brand-soft: 356 100% 95%;
+    --brand-soft-foreground: 345 83% 41%;
+    /* amber for "this week" */
+    --highlight: 48 96% 89%;
+    --highlight-foreground: 26 90% 30%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 30 8% 9%;
-    --foreground: 40 20% 93%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 30 7% 12%;
-    --card-foreground: 40 20% 93%;
+    --card: 240 6% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 30 7% 12%;
-    --popover-foreground: 40 20% 93%;
+    --popover: 240 6% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 155 42% 52%;
-    --primary-foreground: 30 10% 8%;
+    /* rose-500 with near-black text: 5.6:1 */
+    --primary: 350 89% 60%;
+    --primary-foreground: 240 10% 4%;
 
-    --secondary: 30 6% 17%;
-    --secondary-foreground: 40 20% 93%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 30 6% 17%;
-    --muted-foreground: 35 8% 67%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 30 6% 19%;
-    --accent-foreground: 40 20% 93%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 4 72% 64%;
-    --destructive-foreground: 30 10% 8%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 240 10% 4%;
 
-    --border: 30 6% 21%;
-    --input: 30 6% 28%;
-    --ring: 155 42% 52%;
+    --border: 240 4% 16%;
+    --input: 240 4% 22%;
+    --ring: 350 89% 60%;
 
-    --brand-soft: 155 22% 17%;
-    --brand-soft-foreground: 152 45% 75%;
-    --highlight: 32 30% 18%;
-    --highlight-foreground: 36 80% 76%;
+    --brand-soft: 350 45% 17%;
+    --brand-soft-foreground: 352 96% 82%;
+    --highlight: 38 50% 15%;
+    --highlight-foreground: 45 95% 70%;
   }
 }
 
@@ -88,7 +93,8 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
+    -webkit-tap-highlight-color: transparent;
     font-feature-settings: "cv11", "ss01";
     overflow-x: clip;
   }
@@ -101,10 +107,25 @@
 
 @layer components {
   .surface {
-    @apply rounded-xl border bg-card text-card-foreground shadow-[0_1px_2px_hsl(30_20%_20%/0.04)];
+    @apply rounded-[2rem] border bg-card text-card-foreground shadow-sm;
+  }
+  /* Big monumental numbers for step counts. */
+  .big-number {
+    @apply font-black tabular-nums tracking-tight;
+  }
+  /* iOS safe areas (non-zero only with viewport-fit=cover). */
+  .safe-x {
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+  .safe-b {
+    padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
+  }
+  .safe-t {
+    padding-top: max(env(safe-area-inset-top), 1rem);
   }
   .eyebrow {
-    @apply text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground;
+    @apply text-xs font-bold uppercase tracking-wider text-muted-foreground;
   }
   /* A quiet dotted footpath used as a divider/progress track. */
   .trail {
@@ -115,11 +136,32 @@
   }
 }
 
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out both;
+  }
+  .animate-slide-up {
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

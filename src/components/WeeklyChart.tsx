@@ -67,7 +67,7 @@ const ChartTooltip = ({ active, payload, periods, mode }: TooltipProps<number, s
   else if (p.steps === 0) value = "0 logged";
   else value = `${fmtSteps(p.steps)} steps${p.isBest ? " · your best" : ""}`;
   return (
-    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-sm">
+    <div className="rounded-xl border bg-popover px-2.5 py-1.5 text-xs shadow-sm">
       <div className="font-medium">
         Week {p.week}
         {p.state === "current" && <span className="font-normal text-muted-foreground"> · this week</span>}

@@ -23,7 +23,7 @@ interface Props {
 const WeekPicker = ({ periods, today, selected, valueOf, statusOf, onSelect }: Props) => (
   <div className="space-y-2.5">
     <ul
-      className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6"
+      className="grid grid-cols-3 gap-2"
       aria-label={onSelect ? "Choose a week" : "Your weeks"}
     >
       {periods.map((p) => {
@@ -57,13 +57,13 @@ const WeekPicker = ({ periods, today, selected, valueOf, statusOf, onSelect }: P
             <Tag
               {...tagProps}
               className={cn(
-                "flex h-full min-h-[3.75rem] w-full min-w-0 flex-col justify-center gap-0.5 rounded-lg border px-2.5 py-2 text-left transition-colors",
+                "flex h-full min-h-[3.75rem] w-full min-w-0 flex-col justify-center gap-0.5 rounded-2xl border-2 px-2.5 py-2 text-left transition-[color,background-color,border-color,transform]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card",
                 state === "future" ? "border-dashed bg-transparent text-muted-foreground" : "bg-card",
                 onSelect && state === "future" && "cursor-not-allowed",
-                interactive && "hover:border-primary/50 hover:bg-accent/60",
+                interactive && "hover:border-primary/50 hover:bg-accent/60 active:scale-[0.97]",
                 state === "current" && !isSelected && "border-highlight-foreground/30 bg-highlight/60",
-                isSelected && "border-primary bg-brand-soft ring-1 ring-primary hover:bg-brand-soft",
+                isSelected && "border-primary bg-brand-soft hover:bg-brand-soft",
               )}
             >
               <span className="sr-only">{label}</span>
@@ -74,9 +74,7 @@ const WeekPicker = ({ periods, today, selected, valueOf, statusOf, onSelect }: P
                 ) : status === "error" ? (
                   <AlertCircle className="h-3.5 w-3.5 shrink-0 text-destructive" />
                 ) : state === "current" ? (
-                  <span className="shrink-0 rounded-full bg-highlight-foreground px-1.5 text-[10px] font-semibold uppercase leading-4 text-highlight">
-                    Now
-                  </span>
+                  <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-highlight-foreground" />
                 ) : value !== undefined ? (
                   <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
                 ) : null}
@@ -85,7 +83,7 @@ const WeekPicker = ({ periods, today, selected, valueOf, statusOf, onSelect }: P
                 aria-hidden
                 className={cn(
                   "truncate text-sm tabular-nums",
-                  value === undefined || state === "future" ? "text-muted-foreground" : "font-semibold",
+                  value === undefined || state === "future" ? "text-muted-foreground" : "font-bold",
                 )}
               >
                 {state === "future" ? fmtDay(p.start) : value !== undefined ? fmtSteps(value) : "–"}
@@ -97,10 +95,7 @@ const WeekPicker = ({ periods, today, selected, valueOf, statusOf, onSelect }: P
     </ul>
     <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-hidden>
       <span className="inline-flex items-center gap-1">
-        <span className="rounded-full bg-highlight-foreground px-1.5 text-[10px] font-semibold uppercase leading-4 text-highlight">
-          Now
-        </span>
-        this week
+        <span className="h-2.5 w-2.5 rounded-full bg-highlight-foreground" /> this week
       </span>
       <span className="inline-flex items-center gap-1">
         <Check className="h-3.5 w-3.5 text-primary" /> logged

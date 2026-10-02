@@ -1,11 +1,11 @@
 import { Footprints } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Footprints in a soft green tile: the one walking motif used across the app. */
+/** Footprints in a coral tile: the one walking motif used across the app. */
 const BrandMark = ({ className }: { className?: string }) => (
   <span
     className={cn(
-      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-soft-foreground",
+      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/30",
       className,
     )}
     aria-hidden
