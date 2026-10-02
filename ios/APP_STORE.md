@@ -1,6 +1,6 @@
 # Wooly Walking: App Store submission kit
 
-Status (2 Oct 2026): the app and website are ready on our side. Submission is blocked only on an active Apple Developer Program membership.
+Status (2 Oct 2026): the app and website are ready. Submission goes through Richard Slatter's team; the only step that needs Richard is one build upload (see "Upload (Richard's team)").
 
 ## Why it's blocked
 
@@ -23,22 +23,26 @@ Status (2 Oct 2026): the app and website are ready on our side. Submission is bl
 
 Code is done: the iOS app shows the system Sign in with Apple sheet (`AppleSignInBridge.swift`, entitlement `com.apple.developer.applesignin`), browsers use Firebase's web popup, and the server accepts `apple.com` tokens. To switch it on:
 
-1. developer.apple.com > Identifiers: on App ID `dev.woolston.steps` enable **Sign in with Apple** (Xcode's automatic signing does this on the first archive). For the website, create a Services ID (e.g. `dev.woolston.steps.web`) with domain `wooly-walking-challenge-2026.firebaseapp.com` and return URL `https://wooly-walking-challenge-2026.firebaseapp.com/__/auth/handler`, and create a Sign in with Apple key.
-2. Firebase console > Project settings: add an iOS app with bundle ID `dev.woolston.steps` (lets Firebase accept the app's native Apple tokens). Then Authentication > Sign-in method > Apple: enable it with the Services ID, team ID, key ID and private key.
+1. developer.apple.com > Identifiers (Richard's account): on App ID `au.com.richardslatter.LoungeRemote` enable **Sign in with Apple** (Xcode's automatic signing does this on the first archive). For the website, create a Services ID (e.g. `dev.woolston.steps.web`) with domain `wooly-walking-challenge-2026.firebaseapp.com` and return URL `https://wooly-walking-challenge-2026.firebaseapp.com/__/auth/handler`, and create a Sign in with Apple key.
+2. Firebase console > Project settings: add an iOS app with bundle ID `au.com.richardslatter.LoungeRemote` (lets Firebase accept the app's native Apple tokens). Then Authentication > Sign-in method > Apple: enable it with the Services ID, team ID, key ID and private key.
 3. On the server add `VITE_APPLE_SIGNIN=1` to `/root/steps-fb.env`, add `--build-arg VITE_APPLE_SIGNIN` to `/opt/lab/build/deploy-steps.sh`, and redeploy. The "Continue with Apple" button then appears on the sign-in page.
 4. Test on a phone: Continue with Apple in the app (native sheet) and in Safari (web popup).
 
 Reviewers can then sign in with their own Apple ID, so no demo account is needed; still list the Google test account as a fallback.
 
-## Upload
+## Upload (Richard's team)
+
+The listing lives on Richard Slatter's team (`8F87P9YMNW`, individual membership, active). Ben is Admin there but has no Certificates, Identifiers & Profiles access, so Richard has to build and upload once. The app uses his existing, unused bundle ID `au.com.richardslatter.LoungeRemote` (chosen by Ben on 2 Oct 2026).
+
+On Richard's Mac (Xcode signed in as him):
 
 ```sh
-cd ios
-printf 'DEVELOPMENT_TEAM = UAWRH53TM4\n' > Config/Signing.local.xcconfig
+git clone https://github.com/Trillient/step-gamify-universe.git && cd step-gamify-universe/ios
+printf 'DEVELOPMENT_TEAM = 8F87P9YMNW\nPRODUCT_BUNDLE_IDENTIFIER = au.com.richardslatter.LoungeRemote\n' > Config/Signing.local.xcconfig
 ./scripts/testflight.sh
 ```
 
-Create the app in App Store Connect first (iOS, name "Wooly Walking", bundle `dev.woolston.steps`, SKU `woolywalking`).
+Xcode's automatic signing adds the HealthKit and Sign in with Apple capabilities to that App ID on the first archive. After the build finishes processing (5 to 30 minutes), Ben can do everything else in App Store Connect as Admin: TestFlight testers, listing, screenshots, privacy answers and Submit for Review.
 
 ## Screenshots
 
