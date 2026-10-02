@@ -67,6 +67,19 @@ export class Store {
     this.db.prepare("UPDATE users SET display_name = ?, name_customised = 1 WHERE uid = ?").run(name, uid);
   }
 
+  /** Remove the user and all their entries (App Store account deletion). */
+  deleteUser(uid: string): void {
+    this.db.exec("BEGIN");
+    try {
+      this.db.prepare("DELETE FROM entries WHERE uid = ?").run(uid);
+      this.db.prepare("DELETE FROM users WHERE uid = ?").run(uid);
+      this.db.exec("COMMIT");
+    } catch (e) {
+      this.db.exec("ROLLBACK");
+      throw e;
+    }
+  }
+
   saveEntry(uid: string, week: number, steps: number, now: string): void {
     this.db
       .prepare(

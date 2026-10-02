@@ -100,6 +100,12 @@ const Index = () => {
               You always see your own entries. Dates follow Brisbane time, so each week rolls over at midnight there.
             </p>
           </Fold>
+          <a
+            href="/privacy"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Privacy policy
+          </a>
         </div>
       </div>
     </main>

@@ -113,6 +113,12 @@ export function createApp(deps: AppDeps) {
     },
   );
 
+  // Deletes the participant and every entry. Signing in again starts an empty account.
+  app.delete("/api/me", requireAuth, (c) => {
+    store.deleteUser(c.get("user").uid);
+    return c.json({ deleted: true });
+  });
+
   app.get("/api/me/entries", requireAuth, (c) => {
     const rows = store.ownEntries(c.get("user").uid);
     return c.json({
