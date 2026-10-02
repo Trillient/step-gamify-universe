@@ -38,8 +38,18 @@ const Privacy = () => (
           <li>the weekly step totals you type in, and when you last changed each one</li>
         </ul>
         <p>
-          We do not store your email address, password, location, contacts or health data. The app only knows the
-          numbers you enter.
+          We do not store your email address, password, location or contacts. The site only knows the numbers you
+          enter.
+        </p>
+      </Section>
+
+      <Section title="Apple Health (iPhone app)">
+        <p>
+          If you tap <strong className="text-foreground">Import from Apple Health</strong>, the iPhone app asks your
+          permission to read your step count, adds up the steps for that week on your phone and puts the number in the
+          box. Only that weekly total is saved, the same as if you typed it. We never read any other health data, never
+          write to Health, and never use it for advertising or share it. You can turn access off any time in Settings
+          &gt; Health &gt; Data Access &amp; Devices.
         </p>
       </Section>
 
