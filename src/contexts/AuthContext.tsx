@@ -1,5 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
+import {
+  OAuthProvider,
+  onAuthStateChanged,
+  signInWithCredential,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
+import { hasNativeAppleSignIn, nativeAppleSignIn } from "@/lib/native";
 import { toast } from "sonner";
 import { appleProvider, auth, firebaseConfigured, googleProvider } from "@/lib/firebase";
 
@@ -63,10 +72,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signInWithApple = useCallback(async () => {
     if (!auth) return;
     try {
-      await signInWithPopup(auth, appleProvider);
+      if (hasNativeAppleSignIn()) {
+        // iOS app: system Sign in with Apple sheet, then exchange the token with Firebase.
+        const r = await nativeAppleSignIn();
+        const { user } = await signInWithCredential(
+          auth,
+          new OAuthProvider("apple.com").credential({ idToken: r.idToken, rawNonce: r.rawNonce }),
+        );
+        const name = [r.givenName, r.familyName].filter(Boolean).join(" ");
+        if (name && !user.displayName) {
+          // Apple only shares the name on first sign-in; keep it and refresh the token so the server sees it.
+          await updateProfile(user, { displayName: name });
+          await user.getIdToken(true);
+        }
+      } else {
+        await signInWithPopup(auth, appleProvider);
+      }
     } catch (error) {
-      const code = (error as { code?: string }).code;
-      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      const code = (error as { code?: string; message?: string }).code ?? (error as Error).message;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request" || code === "cancelled") return;
       console.error("Apple sign-in failed", error);
       toast.error(signInMessage(code), { duration: 10_000 });
     }
