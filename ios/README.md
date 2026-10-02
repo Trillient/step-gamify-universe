@@ -31,8 +31,7 @@ Needs a paid Apple Developer Program team; no team ID is committed.
 
 1. Create `Config/Signing.local.xcconfig` (gitignored) with `DEVELOPMENT_TEAM = <your 10 char team id>`.
 2. In App Store Connect, create an app with bundle ID `dev.woolston.steps` (register the identifier first under Certificates, Identifiers & Profiles).
-3. Bump `CURRENT_PROJECT_VERSION` in `Config/App.xcconfig` for every upload.
-4. Archive and upload:
+3. Run `scripts/testflight.sh`. It archives, stamps a timestamp build number and uploads. The manual equivalent:
 
 ```sh
 cd ios
