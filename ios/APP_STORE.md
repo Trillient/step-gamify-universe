@@ -35,6 +35,10 @@ printf 'DEVELOPMENT_TEAM = UAWRH53TM4\n' > Config/Signing.local.xcconfig
 
 Create the app in App Store Connect first (iOS, name "Wooly Walking", bundle `dev.woolston.steps`, SKU `woolywalking`).
 
+## Screenshots
+
+`ios/AppStore/screenshots/` holds six 1320x2868 PNGs (6.9" iPhone, the only size App Store Connect requires): home with Apple Health import, journey + leaderboard, stats, weekly effort, the blind final stretch and sign-in. The app is iPhone-only, so no iPad set is needed. Regenerate with the scratch preview harness and Playwright (see HANDOVER).
+
 ## Listing
 
 - Name: Wooly Walking
