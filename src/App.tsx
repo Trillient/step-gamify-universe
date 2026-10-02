@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
+import Support from "./pages/Support";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/privacy" element={<Privacy />} />
+                <Route path="/support" element={<Support />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

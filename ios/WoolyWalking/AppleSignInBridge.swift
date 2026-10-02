@@ -5,7 +5,7 @@ import WebKit
 
 /// Native Sign in with Apple for the site, so sign-in never depends on a web popup.
 /// JS: `await window.webkit.messageHandlers.appleSignIn.postMessage({})` resolves to
-/// `{ idToken, rawNonce, givenName, familyName }`; the site exchanges it with Firebase
+/// `{ idToken, rawNonce, authorizationCode, givenName, familyName }`; the site exchanges it with Firebase
 /// (`OAuthProvider("apple.com").credential({ idToken, rawNonce })`).
 final class AppleSignInBridge: NSObject, WKScriptMessageHandlerWithReply {
     static let name = "appleSignIn"
@@ -40,9 +40,12 @@ final class AppleSignInBridge: NSObject, WKScriptMessageHandlerWithReply {
                   let idToken = String(data: tokenData, encoding: .utf8) else {
                 return (nil, "no-token")
             }
+            // Needed to revoke the Apple sign-in when the user deletes their account (App Review 5.1.1(v)).
+            let authorizationCode = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) } ?? ""
             return ([
                 "idToken": idToken,
                 "rawNonce": rawNonce,
+                "authorizationCode": authorizationCode,
                 "givenName": credential.fullName?.givenName ?? "",
                 "familyName": credential.fullName?.familyName ?? "",
             ], nil)

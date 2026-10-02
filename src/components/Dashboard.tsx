@@ -195,6 +195,12 @@ const Dashboard = () => {
                 >
                   Privacy policy
                 </a>
+                <a
+                  href="/support"
+                  className="flex min-h-11 items-center justify-center text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Help &amp; support
+                </a>
               </section>
             </div>
           )}
