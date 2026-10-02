@@ -15,6 +15,23 @@ interface AuthContextType {
   getToken: () => Promise<string | null>;
 }
 
+/** Plain-language reason, with the code so a screenshot tells us what went wrong. */
+function signInMessage(code: string | undefined): string {
+  switch (code) {
+    case "auth/popup-blocked":
+      return "Your browser blocked the sign-in window. Allow pop-ups for this site, then try again.";
+    case "auth/network-request-failed":
+      return "No connection to Google. Check your internet and try again.";
+    case "auth/web-storage-unsupported":
+    case "auth/operation-not-supported-in-this-environment":
+      return "This browser can't do Google sign-in. Open the link in Safari or Chrome instead.";
+    case "auth/user-disabled":
+      return "That Google account has been disabled.";
+    default:
+      return `Could not sign in. Please try again in Safari or Chrome. (${code ?? "unknown error"})`;
+  }
+}
+
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const useAuth = () => useContext(AuthContext);
@@ -39,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const code = (error as { code?: string }).code;
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
       console.error("Google sign-in failed", error);
-      toast.error("Could not sign in with Google. Please try again.");
+      toast.error(signInMessage(code), { duration: 10_000 });
     }
   }, []);
 
@@ -51,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const code = (error as { code?: string }).code;
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
       console.error("Apple sign-in failed", error);
-      toast.error("Could not sign in with Apple. Please try again.");
+      toast.error(signInMessage(code), { duration: 10_000 });
     }
   }, []);
 
