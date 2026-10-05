@@ -1,6 +1,6 @@
 # Wooly Walking Challenge 2026
 
-A 12-week family step challenge, 2026-10-01 to 2026-12-20 inclusive. Everyone signs in with Google and enters one total step count per week.
+A yearly 12-week step challenge open to anyone, 2026-10-01 to 2026-12-20 inclusive. Everyone signs in with Google and enters one total step count per week.
 
 ## Rules the server enforces
 

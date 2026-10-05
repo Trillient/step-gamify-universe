@@ -25,7 +25,7 @@ const Privacy = () => (
 
       <Section title="Who runs this">
         <p>
-          Wooly Walking is a private family step challenge run by Ben Woolston for family and friends. It is not a
+          Wooly Walking is a yearly step challenge, open to anyone, run by Ben Woolston. It is not a
           commercial service, has no ads and sells nothing.
         </p>
       </Section>
@@ -84,7 +84,7 @@ const Privacy = () => (
       </Section>
 
       <Section title="Kids">
-        <p>The challenge is for family members. Children should take part with a parent or guardian.</p>
+        <p>Anyone can join. Children should take part with a parent or guardian.</p>
       </Section>
     </div>
   </main>

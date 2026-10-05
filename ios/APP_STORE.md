@@ -51,15 +51,15 @@ Xcode's automatic signing adds the HealthKit and Sign in with Apple capabilities
 ## Listing
 
 - Name: Wooly Walking
-- Subtitle: Family step challenge
+- Subtitle: Yearly step challenge
 - Category: Health & Fitness
 - Age rating: 4+
-- Promotional text: Twelve weeks, one family, every step counts.
+- Promotional text: Twelve weeks, one leaderboard, every step counts.
 - Description:
-  Wooly Walking is our family's 12-week step challenge, 1 October to 20 December.
-  Log one step total a week (or import it from Apple Health), watch your progress and see where you sit on the family leaderboard. The last four weeks are blind, so the result is a surprise until the big reveal.
+  Wooly Walking is a yearly 12-week step challenge, open to anyone, 1 October to 20 December.
+  Log one step total a week (or import it from Apple Health), watch your progress and see where you sit on the leaderboard. The last four weeks are blind, so the result is a surprise until the big reveal.
   Private by design: other walkers only see your name and totals once you pass 1,000 steps, your email is never shown, and you can delete your account any time.
-- Keywords: steps,walking,family,challenge,pedometer,leaderboard,fitness
+- Keywords: steps,walking,challenge,pedometer,leaderboard,fitness,step counter,competition,health,weekly
 - Support URL / Marketing URL: https://steps.woolston.dev
 - Privacy policy URL: https://steps.woolston.dev/privacy
 
@@ -71,4 +71,4 @@ Xcode's automatic signing adds the HealthKit and Sign in with Apple capabilities
 
 ## Review notes (paste into App Review Information)
 
-Wooly Walking is a private family step challenge. Sign in with the provided Google account (or Sign in with Apple). Enter a weekly step total on Home, or tap "Import from Apple Health" to fill it from Health. Settings has name change, privacy policy and account deletion. The leaderboard shows other walkers only once they pass 1,000 steps, and hides everyone else from 26 Nov to 20 Dec by design.
+Wooly Walking is a yearly step challenge open to anyone. Sign in with the provided Google account (or Sign in with Apple). Enter a weekly step total on Home, or tap "Import from Apple Health" to fill it from Health. Settings has name change, privacy policy and account deletion. The leaderboard shows other walkers only once they pass 1,000 steps, and hides everyone else from 26 Nov to 20 Dec by design.
