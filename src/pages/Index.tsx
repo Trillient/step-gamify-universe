@@ -18,7 +18,7 @@ const howItWorks = [
     "Log one total a week",
     `Any time after a week starts, until ${fmtDay(CHALLENGE_END)}. A rest week counts too: enter 0.`,
   ],
-  ["See how the family is going", "Your total, your best week and where you sit on the board."],
+  ["Race for the top", "Your total, your best week and where you sit on the leaderboard."],
 ] as const;
 
 const GoogleG = () => (
@@ -146,7 +146,7 @@ const Index = () => {
             <br />
             Walking
           </h1>
-          <p className="text-lg font-bold text-muted-foreground">The 2026 Family Challenge</p>
+          <p className="text-lg font-bold text-muted-foreground">The 2026 Step Challenge</p>
           <p className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-widest text-secondary-foreground">
             {fmtDay(CHALLENGE_START)} to {fmtDay(CHALLENGE_END)} · {WEEK_COUNT} weeks
           </p>

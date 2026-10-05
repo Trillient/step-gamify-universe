@@ -1,7 +1,7 @@
 {
   "name": "Wooly Walking Challenge 2026",
   "short_name": "Wooly Walking",
-  "description": "Log your weekly steps and see how the family is going.",
+  "description": "Log your weekly steps and race everyone for the most steps.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
