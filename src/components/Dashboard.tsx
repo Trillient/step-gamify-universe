@@ -70,6 +70,17 @@ const Dashboard = () => {
   const name = me.data?.displayName || user?.displayName || "";
   const firstName = name.split(/\s+/)[0];
   const initial = (firstName.charAt(0) || "?").toUpperCase();
+  const providerId = user?.providerData[0]?.providerId;
+  const accountDescription =
+    providerId === "password"
+      ? "Signed in with a username and password"
+      : providerId === "apple.com"
+        ? user?.email
+          ? `Signed in with Apple as ${user.email}`
+          : "Signed in with Apple"
+        : user?.email
+          ? `Signed in with Google as ${user.email}`
+          : "Signed in with Google";
   const chosen = c ? (selected ?? c.currentWeek ?? startedPeriods(c.periods, c.today).at(-1)?.week ?? null) : null;
 
   const selectWeek = (week: number) => {
@@ -177,7 +188,7 @@ const Dashboard = () => {
                     Account
                   </h2>
                   <p className="truncate text-sm font-medium text-muted-foreground">
-                    {user?.email ? `Signed in with Google as ${user.email}` : "Signed in with Google"}
+                    {accountDescription}
                   </p>
                 </div>
                 <button

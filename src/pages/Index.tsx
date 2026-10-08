@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { ChevronDown, Copy, ExternalLink, Footprints, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { CHALLENGE_END, CHALLENGE_START, WEEK_COUNT } from "@shared/challenge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,8 +11,8 @@ import { chromeIntentUrl, detectEmbeddedBrowser, safariUrl, type EmbeddedBrowser
 
 const howItWorks = [
   [
-    "Sign in with Google",
-    "Others see your Google name, which you can change. Your email is never shown to other walkers.",
+    "Create an account",
+    "Use a username and password, or continue with Google. Your email is never shown to other walkers.",
   ],
   [
     "Log one total a week",
@@ -76,10 +76,10 @@ const OpenInBrowser = ({ embedded, onTryAnyway }: { embedded: EmbeddedBrowser; o
   return (
     <div className="surface space-y-4 p-6 text-left" role="alert">
       <p className="text-lg font-black tracking-tight">
-        Open this in {embedded.android ? "Chrome" : "Safari"} to sign in
+        Open this in {embedded.android ? "Chrome" : "Safari"} to use Google sign-in
       </p>
       <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-        Google sign-in doesn't work inside {embedded.app}.{" "}
+        Google and Apple sign-in don't work inside {embedded.app}.{" "}
         {embedded.android
           ? "Tap the button below to open the challenge in Chrome."
           : "Tap the button below. If nothing happens, tap ••• and choose Open in browser, or copy the link into Safari."}
@@ -118,6 +118,86 @@ const OpenInBrowser = ({ embedded, onTryAnyway }: { embedded: EmbeddedBrowser; o
   );
 };
 
+const ManualAuth = () => {
+  const { signInWithPassword, createManualAccount } = useAuth();
+  const [mode, setMode] = useState<"sign-in" | "create">("sign-in");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      if (mode === "create") await createManualAccount(username, password);
+      else await signInWithPassword(username, password);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="surface space-y-4 p-6 text-left" aria-labelledby="manual-auth-heading">
+      <div>
+        <h2 id="manual-auth-heading" className="text-lg font-black tracking-tight">
+          {mode === "create" ? "Create a username account" : "Sign in with a username"}
+        </h2>
+        <p className="mt-1 text-sm font-medium leading-relaxed text-muted-foreground">
+          No email and no verification step. This works inside Messenger.
+        </p>
+      </div>
+      <form className="space-y-3" onSubmit={submit}>
+        <label className="block space-y-1.5 text-sm font-bold" htmlFor="manual-username">
+          Username
+          <input
+            id="manual-username"
+            name="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="username"
+            spellCheck={false}
+            placeholder="woolywalker"
+            className="h-12 w-full rounded-xl border-2 bg-card px-3 font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+            required
+          />
+          <span className="block text-xs font-medium text-muted-foreground">
+            3–30 letters, numbers, underscores or hyphens
+          </span>
+        </label>
+        <label className="block space-y-1.5 text-sm font-bold" htmlFor="manual-password">
+          Password
+          <input
+            id="manual-password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete={mode === "create" ? "new-password" : "current-password"}
+            className="h-12 w-full rounded-xl border-2 bg-card px-3 font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+            required
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={busy}
+          className="flex h-12 w-full items-center justify-center rounded-xl bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-transform active:scale-95 disabled:cursor-wait disabled:opacity-60"
+        >
+          {busy ? "Working…" : mode === "create" ? "Create account" : "Sign in"}
+        </button>
+      </form>
+      <button
+        type="button"
+        onClick={() => setMode(mode === "create" ? "sign-in" : "create")}
+        className="min-h-11 w-full text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+      >
+        {mode === "create" ? "Already have an account? Sign in" : "New here? Create an account"}
+      </button>
+    </section>
+  );
+};
+
 const Index = () => {
   const { user, loading, signInWithGoogle, signInWithApple, configured } = useAuth();
   const [embedded, setEmbedded] = useState(() => detectEmbeddedBrowser());
@@ -152,11 +232,13 @@ const Index = () => {
           </p>
         </div>
 
-        {embedded && configured ? (
-          <OpenInBrowser embedded={embedded} onTryAnyway={() => setEmbedded(null)} />
-        ) : (
+        {embedded && configured && <OpenInBrowser embedded={embedded} onTryAnyway={() => setEmbedded(null)} />}
+        {configured ? (
           <>
-            {configured && appleSignInEnabled(hasNativeAppleSignIn()) && (
+            <ManualAuth />
+            {!embedded && (
+              <>
+                {appleSignInEnabled(hasNativeAppleSignIn()) && (
               <button
                 type="button"
                 onClick={signInWithApple}
@@ -167,8 +249,7 @@ const Index = () => {
                 </svg>
                 Continue with Apple
               </button>
-            )}
-            {configured ? (
+                )}
               <button
                 type="button"
                 onClick={signInWithGoogle}
@@ -176,15 +257,16 @@ const Index = () => {
               >
                 <GoogleG /> Continue with Google
               </button>
-            ) : (
-              <p
-                role="alert"
-                className="rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
-              >
-                Sign-in is not configured for this deployment (missing Firebase settings).
-              </p>
+              </>
             )}
           </>
+        ) : (
+          <p
+            role="alert"
+            className="rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+          >
+            Sign-in is not configured for this deployment (missing Firebase settings).
+          </p>
         )}
 
         <div className="space-y-3">

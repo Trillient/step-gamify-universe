@@ -1,5 +1,5 @@
 /**
- * Sign-in can't work inside embedded browsers (Messenger, Instagram and co):
+ * Social sign-in can't work inside embedded browsers (Messenger, Instagram and co):
  * they can't open the Firebase sign-in popup, so iOS Messenger throws it out
  * to Safari, which has none of the page's state and shows "Unable to process
  * request due to missing initial state". Google also refuses OAuth in many web

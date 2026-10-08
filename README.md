@@ -1,6 +1,6 @@
 # Wooly Walking Challenge 2026
 
-A yearly 12-week step challenge open to anyone, 2026-10-01 to 2026-12-20 inclusive. Everyone signs in with Google and enters one total step count per week.
+A yearly 12-week step challenge open to anyone, 2026-10-01 to 2026-12-20 inclusive. Walkers can use a username and password or sign in with Google, then enter one total step count per week.
 
 ## Rules the server enforces
 
@@ -23,7 +23,7 @@ Notes on how this is implemented, all in `server/app.ts` and `shared/challenge.t
 
 ## API
 
-All `/api/*` responses are `Cache-Control: no-store`. Authenticated routes need `Authorization: Bearer <Firebase ID token>`, verified with `jose` against Google's signing keys (issuer and audience pinned to `FIREBASE_PROJECT_ID`, sign-in provider must be `google.com`).
+All `/api/*` responses are `Cache-Control: no-store`. Authenticated routes need `Authorization: Bearer <Firebase ID token>`, verified with `jose` against Google's signing keys (issuer and audience pinned to `FIREBASE_PROJECT_ID`, sign-in provider must be `google.com`, `apple.com` or the app's `password` namespace).
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ npm run dev:server             # API on :3000
 npm run dev                    # Vite on :8080, proxies /api to :3000
 ```
 
-Use a Firebase project with Google sign-in enabled and `localhost` in its authorised domains.
+Use a Firebase project with Google and Email/Password sign-in enabled and `localhost` in its authorised domains. Email/Password is presented as a username account: the app uses an internal `@steps.woolston.dev` identifier, does not ask for an email address and does not send verification emails.
 
 ## Checks
 
@@ -75,7 +75,7 @@ docker run -d --name wooly-walking --restart unless-stopped \
 
 Checklist before going live:
 
-1. In the Firebase console, enable Google as a sign-in provider and add the public hostname under Authentication, Settings, Authorised domains.
+1. In the Firebase console, enable Google and Email/Password as sign-in providers and add the public hostname under Authentication, Settings, Authorised domains.
 2. Terminate TLS in front of the container (reverse proxy or tunnel) and forward `Host` and the original scheme.
 3. Probe `GET /api/health` (the image also has a Docker `HEALTHCHECK`).
 4. Do not set `FIREBASE_PROJECT_ID` to a different project than the web config's, or every token is rejected with 401.
@@ -84,4 +84,4 @@ Secrets: there are none in the repository. The Firebase web config values are pu
 
 ### Deployment status
 
-Not deployed yet. Needs a Firebase project with Google sign-in and the public hostname authorised, plus a host and public route for the container (see the checklist above).
+Live at `https://steps.woolston.dev`. The deployment uses a Firebase project with Google and Email/Password sign-in enabled, plus the public hostname authorised.

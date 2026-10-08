@@ -1,11 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
+  EmailAuthProvider,
   OAuthProvider,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
   revokeAccessToken,
   signInWithCredential,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   updateProfile,
@@ -14,6 +17,7 @@ import {
 import { hasNativeAppleSignIn, nativeAppleSignIn } from "@/lib/native";
 import { toast } from "sonner";
 import { appleProvider, auth, firebaseConfigured, googleProvider } from "@/lib/firebase";
+import { MANUAL_PASSWORD_MIN_LENGTH, normalizeUsername, usernameEmail, usernameError } from "@/lib/manualAuth";
 
 interface AuthContextType {
   user: User | null;
@@ -21,8 +25,12 @@ interface AuthContextType {
   configured: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
+  signInWithPassword: (username: string, password: string) => Promise<void>;
+  createManualAccount: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  /** Drop the Firebase account too (best effort), then sign out. Call after the API delete. */
+  /** Re-authenticate a password account before deleting any server data. */
+  reauthenticateForDeletion: (password?: string) => Promise<void>;
+  /** Drop the Firebase account too, then sign out. Call after the API delete. */
   forgetAccount: () => Promise<void>;
   /**
    * Apple requires revoking Sign in with Apple when an account is deleted. Re-confirms with Apple
@@ -47,6 +55,36 @@ function signInMessage(code: string | undefined): string {
     default:
       return `Could not sign in. Please try again in Safari or Chrome. (${code ?? "unknown error"})`;
   }
+}
+
+function manualAuthMessage(code: string | undefined): string {
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "That username is already taken. Try signing in instead.";
+    case "auth/invalid-credential":
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+      return "That username or password is wrong.";
+    case "auth/weak-password":
+      return `Use at least ${MANUAL_PASSWORD_MIN_LENGTH} characters for your password.`;
+    case "auth/operation-not-allowed":
+      return "Username sign-in is not enabled yet. Try again shortly.";
+    case "auth/network-request-failed":
+      return "No connection to the sign-in service. Check your internet and try again.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Wait a moment, then try again.";
+    default:
+      return `Could not sign in. Please try again (${code ?? "unknown error"})`;
+  }
+}
+
+function validateManualCredentials(username: string, password: string): string | null {
+  return (
+    usernameError(username) ??
+    (password.length < MANUAL_PASSWORD_MIN_LENGTH
+      ? `Use at least ${MANUAL_PASSWORD_MIN_LENGTH} characters for your password.`
+      : null)
+  );
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -74,6 +112,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
       console.error("Google sign-in failed", error);
       toast.error(signInMessage(code), { duration: 10_000 });
+    }
+  }, []);
+
+  const signInWithPassword = useCallback(async (username: string, password: string) => {
+    if (!auth) return;
+    const validationError = validateManualCredentials(username, password);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    try {
+      const { user: signedInUser } = await signInWithEmailAndPassword(
+        auth,
+        usernameEmail(username),
+        password,
+      );
+      if (!signedInUser.displayName) {
+        await updateProfile(signedInUser, { displayName: normalizeUsername(username) });
+        await signedInUser.getIdToken(true);
+      }
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      console.error("Username sign-in failed", error);
+      toast.error(manualAuthMessage(code), { duration: 10_000 });
+    }
+  }, []);
+
+  const createManualAccount = useCallback(async (username: string, password: string) => {
+    if (!auth) return;
+    const validationError = validateManualCredentials(username, password);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    try {
+      const { user: createdUser } = await createUserWithEmailAndPassword(auth, usernameEmail(username), password);
+      await updateProfile(createdUser, { displayName: normalizeUsername(username) });
+      await createdUser.getIdToken(true);
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      console.error("Username account creation failed", error);
+      toast.error(manualAuthMessage(code), { duration: 10_000 });
     }
   }, []);
 
@@ -109,11 +189,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (auth) await signOut(auth);
   }, []);
 
+  const reauthenticateForDeletion = useCallback(async (password?: string) => {
+    const currentUser = auth?.currentUser;
+    if (!currentUser) return;
+    if (!currentUser.providerData.some((provider) => provider.providerId === "password")) return;
+    if (!currentUser.email || !password) throw new Error("password-required");
+    await reauthenticateWithCredential(currentUser, EmailAuthProvider.credential(currentUser.email, password));
+  }, []);
+
   const forgetAccount = useCallback(async () => {
     if (!auth) return;
-    // Firebase may want a recent sign-in to delete the user; the app data is already gone either way.
-    await auth.currentUser?.delete().catch(() => undefined);
-    await signOut(auth).catch(() => undefined);
+    await auth.currentUser?.delete();
+    await signOut(auth);
   }, []);
 
   const revokeAppleIfNeeded = useCallback(async () => {
@@ -158,12 +245,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       configured: firebaseConfigured,
       signInWithGoogle,
       signInWithApple,
+      signInWithPassword,
+      createManualAccount,
       logout,
+      reauthenticateForDeletion,
       forgetAccount,
       revokeAppleIfNeeded,
       getToken,
     }),
-    [user, loading, signInWithGoogle, signInWithApple, logout, forgetAccount, revokeAppleIfNeeded, getToken],
+    [
+      user,
+      loading,
+      signInWithGoogle,
+      signInWithApple,
+      signInWithPassword,
+      createManualAccount,
+      logout,
+      reauthenticateForDeletion,
+      forgetAccount,
+      revokeAppleIfNeeded,
+      getToken,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

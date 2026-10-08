@@ -20,7 +20,7 @@ const Privacy = () => (
     <div className="surface mt-2 space-y-6 p-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-black tracking-tight">Privacy policy</h1>
-        <p className="text-sm font-medium text-muted-foreground">Wooly Walking Challenge 2026 · updated 3 October 2026</p>
+        <p className="text-sm font-medium text-muted-foreground">Wooly Walking Challenge 2026 · updated 8 October 2026</p>
       </div>
 
       <Section title="Who runs this">
@@ -31,17 +31,18 @@ const Privacy = () => (
       </Section>
 
       <Section title="What we store">
-        <p>When you sign in (with Google or Apple) we keep:</p>
+        <p>When you sign in with Google, Apple or a username and password, we keep:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>your sign-in account ID, so we know which entries are yours</li>
           <li>your display name (your account name until you change it in Settings)</li>
           <li>the weekly step totals you type in, and when you last changed each one</li>
         </ul>
         <p>
-          Our server does not store your email address, password, location or contacts. Google Firebase
-          Authentication, which handles sign-in, keeps the email address of the Google or Apple account you sign in
-          with (or Apple's private relay address) so it can sign you in. The challenge itself only knows the numbers
-          you enter.
+          Our server does not store your email address, password, location or contacts. Firebase Authentication
+          handles sign-in. If you use Google or Apple, Firebase keeps the email address for that account (or Apple's
+          private relay address). If you use a username account, Firebase keeps an internal email-shaped identifier
+          that is not a real mailbox and never needs verification. The challenge itself only knows the numbers you
+          enter.
         </p>
       </Section>
 
@@ -65,7 +66,7 @@ const Privacy = () => (
 
       <Section title="Services we use">
         <p>
-          Sign-in uses Google Firebase Authentication. Pages are delivered through Cloudflare, and fonts are loaded
+          Sign-in uses Google Firebase Authentication for Google, Apple and username accounts. Pages are delivered through Cloudflare, and fonts are loaded
           from Google Fonts. Your data is stored on a private server in Australia. We do not use analytics, tracking or
           advertising, and we never sell or share your data.
         </p>

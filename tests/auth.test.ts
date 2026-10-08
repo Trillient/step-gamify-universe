@@ -49,7 +49,20 @@ describe("firebase token verification", () => {
     expect(user.uid).toBeTruthy();
   });
 
-  it("rejects tokens that did not come from Google sign-in", async () => {
+  it("accepts Firebase password-provider tokens", async () => {
+    const { sign, verify } = await setup();
+    const user = await verify(await sign({ email: "wooly_walker@steps.woolston.dev", firebase: { sign_in_provider: "password" } }));
+    expect(user.uid).toBeTruthy();
+  });
+
+  it("rejects password-provider tokens outside the username namespace", async () => {
+    const { sign, verify } = await setup();
+    await expect(verify(await sign({ email: "someone@example.com", firebase: { sign_in_provider: "password" } }))).rejects.toThrow();
+    await expect(verify(await sign({ email: "a@steps.woolston.dev", firebase: { sign_in_provider: "password" } }))).rejects.toThrow();
+    await expect(verify(await sign({ firebase: { sign_in_provider: "password" } }))).rejects.toThrow();
+  });
+
+  it("rejects tokens from unsupported providers", async () => {
     const { sign, verify } = await setup();
     await expect(verify(await sign({ firebase: { sign_in_provider: "anonymous" } }))).rejects.toThrow();
     await expect(verify(await sign({ firebase: undefined }))).rejects.toThrow();

@@ -16,19 +16,30 @@ import {
 
 /** In-app account deletion: removes your name and every step entry from the server. */
 const DeleteAccount = ({ beforeDelete }: { beforeDelete: () => Promise<void> }) => {
-  const { getToken, forgetAccount, revokeAppleIfNeeded } = useAuth();
+  const { user, getToken, reauthenticateForDeletion, forgetAccount, revokeAppleIfNeeded } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const isPasswordAccount = user?.providerData.some((provider) => provider.providerId === "password") ?? false;
 
   const remove = async () => {
+    if (isPasswordAccount && !password) {
+      setError("Enter your password to confirm account deletion.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       await beforeDelete();
       // Apple sign-ins are revoked first; if that fails nothing is deleted and the user can retry.
       await revokeAppleIfNeeded();
-      await api.deleteMe(getToken);
+      await reauthenticateForDeletion(password);
+      const deletionToken = await getToken();
+      if (!deletionToken) throw new Error("missing-deletion-token");
       await forgetAccount();
+      // Firebase deletion is the irreversible identity step. Keep using the short-lived token
+      // captured above for the idempotent server cleanup after it succeeds.
+      await api.deleteMe(() => Promise.resolve(deletionToken));
     } catch {
       setError("Could not delete your account. Check your connection, confirm with Apple if asked, and try again.");
       setBusy(false);
@@ -55,6 +66,19 @@ const DeleteAccount = ({ beforeDelete }: { beforeDelete: () => Promise<void> }) 
               This removes your name and every step total you've logged, and takes you off the leaderboard. It can't be
               undone. You can sign in again later to start fresh.
             </AlertDialogDescription>
+            {isPasswordAccount && (
+              <label className="block space-y-1.5 text-left text-sm font-bold" htmlFor="delete-account-password">
+                Password
+                <input
+                  id="delete-account-password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  className="h-12 w-full rounded-xl border-2 bg-card px-3 font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
+                />
+              </label>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-12 rounded-2xl">Keep my account</AlertDialogCancel>

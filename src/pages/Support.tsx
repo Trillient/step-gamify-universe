@@ -7,7 +7,7 @@ const contact = ["bcwoolston", "gmail.com"].join("@");
 const faqs: [string, string][] = [
   [
     "I can't sign in from Messenger or Instagram",
-    "Sign-in doesn't work inside other apps' built-in browsers. Tap Open in Safari (or Open in Chrome) on the sign-in page, or open steps.woolston.dev in your browser.",
+    "Username and password sign-in works inside Messenger and Instagram. Google sign-in still needs a real browser: tap Open in Safari (or Open in Chrome) on the sign-in page, or open steps.woolston.dev there.",
   ],
   [
     "Why can't I see other walkers?",
